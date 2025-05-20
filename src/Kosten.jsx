@@ -67,16 +67,16 @@ export default function Kosten() {
 
 
 
-useEffect(() => {
-  const ladeDaten = async () => {
-    const stored = await localforage.getItem("zerotrace") || {
-      vehicles: {},
-      activeVin: vin,
-    };
+  useEffect(() => {
+    const ladeDaten = async () => {
+        const stored = await localforage.getItem("zerotrace") || {
+        vehicles: {},
+        activeVin: vin,
+        };
 
-    if (!stored.vehicles[vin]) {
-      stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
-    }
+        if (!stored.vehicles[vin]) {
+        stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+        }
 
     const fahrzeug = stored.vehicles[vin];
     setEntries([...fahrzeug.betankungen].reverse());
@@ -94,17 +94,17 @@ useEffect(() => {
   ladeDaten();
 }, []);
 
-  useEffect(() => {
+useEffect(() => {
     const dist = tachostand - letzterStand;
     setDistanz(dist);
     if (dist > 0 && menge > 0) setVerbrauch(((menge / dist) * 100).toFixed(2));
   }, [tachostand]);
 
-  useEffect(() => {
+useEffect(() => {
     if (distanz > 0 && menge > 0) setVerbrauch(((menge / distanz) * 100).toFixed(2));
   }, [distanz, menge]);
 
-  useEffect(() => {
+useEffect(() => {
     if (menge && preisProLiter) setGesamtbetrag((menge * preisProLiter).toFixed(2));
     else if (menge && gesamtbetrag) setPreisProLiter((gesamtbetrag / menge).toFixed(3));
     else if (preisProLiter && gesamtbetrag) setMenge((gesamtbetrag / preisProLiter).toFixed(2));
@@ -325,6 +325,34 @@ const speichernErinnerung = async () => {
       </CardContent>
     </Card>
   )}
+  {activeTab === "betankungen" && entries.map((e, i) =>(
+  <Card key={i} className="mb-4">
+    <CardContent className="p-4">
+      <p className="font-semibold">{e.datum} – {e.km} km – {e.sorte}</p>
+      <p className="text-sm">{e.menge} l • {e.gesamt} {e.waehrung || "EUR"} • Verbrauch: {e.verbrauch ?? "?"} l/100km</p>
+
+      {e.streckenprofil?.length > 0 && (
+        <p className="text-sm text-muted-foreground">Strecke: {e.streckenprofil.join(", ")}</p>
+      )}
+
+      {(e.optionen?.standheizung || e.optionen?.anhaenger || e.optionen?.klima) && (
+        <p className="text-sm text-muted-foreground">
+          Optionen:
+          {e.optionen.standheizung ? " Standheizung" : ""}
+          {e.optionen.anhaenger ? ", Anhänger" : ""}
+          {e.optionen.klima ? ", Klimaanlage" : ""}
+        </p>
+      )}
+
+      {e.reifen && <p className="text-sm text-muted-foreground">Reifen: {e.reifen}</p>}
+      {e.tankstelle && <p className="text-sm text-muted-foreground">Tankstelle: {e.tankstelle}</p>}
+
+      {e.synced === false && (
+        <p className="text-xs text-yellow-500 mt-2">nicht synchronisiert</p>
+      )}
+    </CardContent>
+  </Card>
+))}
 
   {/* ... Mapping der Einträge bleibt wie bisher ... */}
 </TabsContent>
