@@ -59,6 +59,7 @@ export default function Kosten() {
 
   const vin = "WBA8H71020K659220";
 
+
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("zerotrace")) || {
       vehicles: {},
@@ -167,39 +168,40 @@ export default function Kosten() {
           <TabsTrigger value="erinnerungen">Erinnerungen</TabsTrigger>
         </TabsList>
 
+// ... TabsContent für Betankungen mit erweiterten Feldern
         <TabsContent value="betankungen">
-          {showForm && activeTab === "betankungen" && (
+        {showForm && activeTab === "betankungen" && (
             <Card className="mb-6">
-              <CardContent className="p-4 space-y-4">
+                <CardContent className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div><Label>Tachostand</Label><Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} /></div>
-                  <div><Label>Distanz</Label><Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} /></div>
-                  <div><Label>Menge (l)</Label><Input type="number" value={menge} onChange={(e) => setMenge(Number(e.target.value))} /></div>
-                  <div><Label>Preis pro Liter</Label><Input type="number" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} /></div>
-                  <div><Label>Gesamtbetrag</Label><Input type="number" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} /></div>
-                  <div><Label>Kraftstoff</Label>
-                    <Select onValueChange={setSorte} defaultValue={sorte}>
-                      <SelectTrigger>{sorte}</SelectTrigger>
-                      <SelectContent>
-                        {kraftstoffArten.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-2"><Label>Vollbetankung</Label><Switch checked={voll} onCheckedChange={setVoll} /></div>
-                  <div><Label>Verbrauch</Label><Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} /></div>
+                <div><Label>Tachostand</Label><Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} /></div>
+                <div><Label>Distanz</Label><Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} /></div>
+                <div><Label>Menge (l)</Label><Input type="number" value={menge} onChange={(e) => setMenge(Number(e.target.value))} /></div>
+                <div><Label>Preis pro Liter</Label><Input type="number" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} /></div>
+                <div><Label>Gesamtbetrag</Label><Input type="number" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} /></div>
+                <div><Label>Währung</Label><Select onValueChange={setWaehrung} defaultValue={waehrung}><SelectTrigger>{waehrung}</SelectTrigger><SelectContent>{waehrungen.map(w => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label>Kraftstoff</Label><Select onValueChange={setSorte} defaultValue={sorte}><SelectTrigger>{sorte}</SelectTrigger><SelectContent>{kraftstoffArten.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label>Vollbetankung</Label><Switch checked={voll} onCheckedChange={setVoll} /></div>
+                <div><Label>Verbrauch</Label><Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} /></div>
+                <div><Label>Fahrweise</Label><Select onValueChange={setFahrweise} defaultValue={fahrweise}><SelectTrigger>{fahrweise || "Fahrweise wählen"}</SelectTrigger><SelectContent>{fahrweisen.map(f => (<SelectItem key={f} value={f}>{f}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label>Streckenart</Label><Select onValueChange={setStrecke} defaultValue={strecke}><SelectTrigger>{strecke || "Streckenart wählen"}</SelectTrigger><SelectContent>{streckenarten.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label>Reifentyp</Label><Select onValueChange={setReifen} defaultValue={reifen}><SelectTrigger>{reifen || "Reifentyp wählen"}</SelectTrigger><SelectContent>{reifenarten.map(r => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label>Tankstelle</Label><Input type="text" value={tankstelle} onChange={(e) => setTankstelle(e.target.value)} /></div>
                 </div>
                 <div className="text-right"><Button onClick={speichernBetankung}>Sichern</Button></div>
-              </CardContent>
-            </Card>
-          )}
+            </CardContent>
+         </Card>
+         )}
 
-          {entries.map((e, i) => (
+        {entries.map((e, i) => (
             <Card key={i} className="mb-4"><CardContent className="p-4">
-              <p className="font-semibold">{e.datum} – {e.km} km – {e.sorte}</p>
-              <p className="text-sm">{e.menge} l • {e.gesamt} EUR • Verbrauch: {e.verbrauch ?? "?"} l/100km</p>
-              {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
+            <p className="font-semibold">{e.datum} – {e.km} km – {e.sorte}</p>
+            <p className="text-sm">{e.menge} l • {e.gesamt} {e.waehrung || 'EUR'} • Verbrauch: {e.verbrauch ?? "?"} l/100km</p>
+          {e.fahrweise && <p className="text-sm text-muted-foreground">Fahrweise: {e.fahrweise}, Strecke: {e.strecke}, Reifen: {e.reifen}</p>}
+          {e.tankstelle && <p className="text-sm text-muted-foreground">Tankstelle: {e.tankstelle}</p>}
+          {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
             </CardContent></Card>
-          ))}
+         ))}
         </TabsContent>
 
         <TabsContent value="ausgaben">
