@@ -1,4 +1,4 @@
-// KOSTEN.JSX – finaler Kombicode mit allen drei Tabs vollständig
+// KOSTEN.JSX – finaler Kombi-Code mit Betankungen, Ausgaben und Erinnerungen (vollständig)
 import { useEffect, useState } from "react";
 import {
   Tabs, TabsList, TabsTrigger, TabsContent
@@ -17,7 +17,6 @@ import { Bell, Plus } from "lucide-react";
 export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
   const [showForm, setShowForm] = useState(false);
-
   const [entries, setEntries] = useState([]);
   const [ausgaben, setAusgaben] = useState([]);
   const [erinnerungen, setErinnerungen] = useState([]);
@@ -49,13 +48,18 @@ export default function Kosten() {
   const vin = "WBA8H71020K659220";
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("zerotrace")) || { vehicles: {}, activeVin: vin };
-    if (!stored.vehicles[vin]) stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
-    const fzg = stored.vehicles[vin];
-    setEntries([...fzg.betankungen].reverse());
-    setAusgaben([...fzg.ausgaben].reverse());
-    setErinnerungen([...fzg.erinnerungen].reverse());
-    const letzte = fzg.betankungen.at(-1);
+    const stored = JSON.parse(localStorage.getItem("zerotrace")) || {
+      vehicles: {},
+      activeVin: vin,
+    };
+    if (!stored.vehicles[vin]) {
+      stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+    }
+    const fahrzeug = stored.vehicles[vin];
+    setEntries([...fahrzeug.betankungen].reverse());
+    setAusgaben([...fahrzeug.ausgaben].reverse());
+    setErinnerungen([...fahrzeug.erinnerungen].reverse());
+    const letzte = fahrzeug.betankungen.at(-1);
     if (letzte) {
       setLetzterStand(letzte.km);
       setTachostand(letzte.km);
@@ -80,29 +84,54 @@ export default function Kosten() {
   }, [menge, preisProLiter, gesamtbetrag]);
 
   const speichernBetankung = () => {
-    const eintrag = { datum: new Date().toISOString().split("T")[0], km: tachostand, distanz, menge, preis_l: preisProLiter, gesamt: gesamtbetrag, sorte, voll, verbrauch, synced: false };
+    const neuerEintrag = {
+      datum: new Date().toISOString().split("T")[0],
+      km: tachostand,
+      distanz,
+      menge,
+      preis_l: preisProLiter,
+      gesamt: gesamtbetrag,
+      sorte,
+      voll,
+      verbrauch,
+      synced: false,
+    };
     const stored = JSON.parse(localStorage.getItem("zerotrace"));
-    stored.vehicles[vin].betankungen.unshift(eintrag);
+    stored.vehicles[vin].betankungen.unshift(neuerEintrag);
     localStorage.setItem("zerotrace", JSON.stringify(stored));
-    setEntries([eintrag, ...entries]);
+    setEntries([neuerEintrag, ...entries]);
     setShowForm(false);
   };
 
   const speichernAusgabe = () => {
-    const eintrag = { datum: new Date().toISOString().split("T")[0], tachostand, kostenart, betrag: kosten, bemerkung, synced: false };
+    const neuerEintrag = {
+      datum: new Date().toISOString().split("T")[0],
+      tachostand,
+      kostenart,
+      betrag: kosten,
+      bemerkung,
+      synced: false,
+    };
     const stored = JSON.parse(localStorage.getItem("zerotrace"));
-    stored.vehicles[vin].ausgaben.unshift(eintrag);
+    stored.vehicles[vin].ausgaben.unshift(neuerEintrag);
     localStorage.setItem("zerotrace", JSON.stringify(stored));
-    setAusgaben([eintrag, ...ausgaben]);
+    setAusgaben([neuerEintrag, ...ausgaben]);
     setShowForm(false);
   };
 
   const speichernErinnerung = () => {
-    const eintrag = { titel, beschreibung, faellig, wiederholung, tachostand: fälligKm, synced: false };
+    const neuerEintrag = {
+      titel,
+      beschreibung,
+      faellig,
+      wiederholung,
+      tachostand: fälligKm,
+      synced: false,
+    };
     const stored = JSON.parse(localStorage.getItem("zerotrace"));
-    stored.vehicles[vin].erinnerungen.unshift(eintrag);
+    stored.vehicles[vin].erinnerungen.unshift(neuerEintrag);
     localStorage.setItem("zerotrace", JSON.stringify(stored));
-    setErinnerungen([eintrag, ...erinnerungen]);
+    setErinnerungen([neuerEintrag, ...erinnerungen]);
     setShowForm(false);
   };
 
@@ -115,7 +144,9 @@ export default function Kosten() {
     <div className="min-h-screen p-4">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Kostenübersicht</h1>
-        <Button variant="outline" size="icon" onClick={() => setShowForm(!showForm)}><Plus size={18} /></Button>
+        <Button variant="outline" size="icon" onClick={() => setShowForm(!showForm)}>
+          <Plus size={18} />
+        </Button>
       </div>
       <Tabs defaultValue={activeTab} onValueChange={(v) => { setActiveTab(v); setShowForm(false); }}>
         <TabsList className="grid grid-cols-3 gap-2 mb-4">
@@ -125,21 +156,24 @@ export default function Kosten() {
         </TabsList>
 
         <TabsContent value="betankungen">
-          {showForm && (
-            <Card className="mb-6"><CardContent className="p-4 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input type="number" placeholder="Tachostand" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
-                <Input type="number" placeholder="Distanz" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} />
-                <Input type="number" placeholder="Liter" value={menge} onChange={(e) => setMenge(Number(e.target.value))} />
-                <Input type="number" placeholder="Preis/Liter" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} />
-                <Input type="number" placeholder="Gesamtbetrag" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} />
-                <Select onValueChange={setSorte} defaultValue={sorte}><SelectTrigger>{sorte}</SelectTrigger><SelectContent>{kraftstoffArten.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent></Select>
-                <div className="flex items-center gap-2"><Label>Voll</Label><Switch checked={voll} onCheckedChange={setVoll} /></div>
-                <div><Label>Verbrauch</Label><Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} /></div>
-              </div>
-              <div className="text-right"><Button onClick={speichernBetankung}>Sichern</Button></div>
-            </CardContent></Card>
+          {showForm && activeTab === "betankungen" && (
+            <Card className="mb-6">
+              <CardContent className="p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input type="number" placeholder="Tachostand" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
+                  <Input type="number" placeholder="Distanz" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} />
+                  <Input type="number" placeholder="Liter" value={menge} onChange={(e) => setMenge(Number(e.target.value))} />
+                  <Input type="number" placeholder="Preis/Liter" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} />
+                  <Input type="number" placeholder="Gesamtbetrag" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} />
+                  <Select onValueChange={setSorte} defaultValue={sorte}><SelectTrigger>{sorte}</SelectTrigger><SelectContent>{kraftstoffArten.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent></Select>
+                  <div className="flex items-center gap-2"><Label>Voll</Label><Switch checked={voll} onCheckedChange={setVoll} /></div>
+                  <div><Label>Verbrauch</Label><Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} /></div>
+                </div>
+                <div className="text-right"><Button onClick={speichernBetankung}>Sichern</Button></div>
+              </CardContent>
+            </Card>
           )}
+
           {entries.map((e, i) => (
             <Card key={i} className="mb-4"><CardContent className="p-4">
               <p className="font-semibold">{e.datum} – {e.km} km – {e.sorte}</p>
@@ -150,7 +184,7 @@ export default function Kosten() {
         </TabsContent>
 
         <TabsContent value="ausgaben">
-          {showForm && (
+          {showForm && activeTab === "ausgaben" && (
             <Card className="mb-6"><CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input placeholder="Tachostand" type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
@@ -161,6 +195,7 @@ export default function Kosten() {
               <div className="text-right"><Button onClick={speichernAusgabe}>Sichern</Button></div>
             </CardContent></Card>
           )}
+
           {ausgaben.map((e, i) => (
             <Card key={i} className="mb-4"><CardContent className="p-4">
               <p className="font-semibold">{e.datum} – {e.tachostand} km – {e.kostenart}</p>
@@ -171,7 +206,7 @@ export default function Kosten() {
         </TabsContent>
 
         <TabsContent value="erinnerungen">
-          {showForm && (
+          {showForm && activeTab === "erinnerungen" && (
             <Card className="mb-6"><CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input placeholder="Titel" value={titel} onChange={(e) => setTitel(e.target.value)} />
@@ -183,15 +218,12 @@ export default function Kosten() {
               <div className="text-right"><Button onClick={speichernErinnerung}>Sichern</Button></div>
             </CardContent></Card>
           )}
+
           {erinnerungen.map((e, i) => (
             <Card key={i} className={`mb-4 ${isOverdue(e.faellig) ? "bg-red-100 dark:bg-red-800/20" : ""}`}><CardContent className="p-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-semibold flex items-center gap-2"><Bell size={16} /> {e.titel || "Erinnerung"}</p>
-                  <p className="text-sm text-muted-foreground">Fällig: {e.faellig || "–"} {e.tachostand && `• bei ${e.tachostand} km`}</p>
-                  {e.beschreibung && <p className="text-sm mt-1">{e.beschreibung}</p>}
-                </div>
-              </div>
+              <p className="font-semibold flex items-center gap-2"><Bell size={16} /> {e.titel || "Erinnerung"}</p>
+              <p className="text-sm text-muted-foreground">Fällig: {e.faellig || "–"} {e.tachostand && `• bei ${e.tachostand} km`}</p>
+              {e.beschreibung && <p className="text-sm mt-1">{e.beschreibung}</p>}
               {e.synced === false && <p className="text-xs text-yellow-500 mt-2">nicht synchronisiert</p>}
             </CardContent></Card>
           ))}
