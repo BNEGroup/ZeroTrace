@@ -1,4 +1,4 @@
-// FINAL KOSTEN.JSX mit klaren Labels und Platzhaltern
+// KOSTEN.JSX mit automatischer Verbrauchsberechnung und Distanzlogik
 import { useEffect, useState } from "react";
 import {
   Tabs, TabsList, TabsTrigger, TabsContent
@@ -25,6 +25,8 @@ export default function Kosten() {
   const [gesamtbetrag, setGesamtbetrag] = useState(0);
   const [sorte, setSorte] = useState("HVO100");
   const [voll, setVoll] = useState(true);
+  const [verbrauch, setVerbrauch] = useState(null);
+  const [letzterStand, setLetzterStand] = useState(0);
 
   const kraftstoffArten = [
     "BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel", "Pflanzenöl",
@@ -46,9 +48,37 @@ export default function Kosten() {
     const letzte = fahrzeug.betankungen.at(-1);
     if (letzte) {
       setTachostand(letzte.km);
+      setLetzterStand(letzte.km);
       setSorte(letzte.sorte);
     }
   }, []);
+
+  const handleDistanzChange = (value) => {
+    const dist = Number(value);
+    setDistanz(dist);
+    setTachostand(letzterStand + dist);
+    if (dist && menge) {
+      setVerbrauch(((menge / dist) * 100).toFixed(2));
+    }
+  };
+
+  const handleTachostandChange = (value) => {
+    const stand = Number(value);
+    setTachostand(stand);
+    const dist = stand - letzterStand;
+    setDistanz(dist);
+    if (dist && menge) {
+      setVerbrauch(((menge / dist) * 100).toFixed(2));
+    }
+  };
+
+  const handleMengeChange = (value) => {
+    const liter = Number(value);
+    setMenge(liter);
+    if (distanz && liter) {
+      setVerbrauch(((liter / distanz) * 100).toFixed(2));
+    }
+  };
 
   const speichern = () => {
     const neuerEintrag = {
@@ -60,6 +90,7 @@ export default function Kosten() {
       gesamt: gesamtbetrag,
       sorte,
       voll,
+      verbrauch,
       synced: false,
     };
     const stored = JSON.parse(localStorage.getItem("zerotrace")) || {
@@ -99,15 +130,15 @@ export default function Kosten() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="tachostand">Tachostand (km)</Label>
-                    <Input id="tachostand" type="number" placeholder="z. B. 237123" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
+                    <Input id="tachostand" type="number" placeholder="z. B. 237123" value={tachostand} onChange={(e) => handleTachostandChange(e.target.value)} />
                   </div>
                   <div>
                     <Label htmlFor="distanz">Distanz (km)</Label>
-                    <Input id="distanz" type="number" placeholder="z. B. 630" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} />
+                    <Input id="distanz" type="number" placeholder="z. B. 630" value={distanz} onChange={(e) => handleDistanzChange(e.target.value)} />
                   </div>
                   <div>
                     <Label htmlFor="menge">Menge (Liter)</Label>
-                    <Input id="menge" type="number" placeholder="z. B. 53.4" value={menge} onChange={(e) => setMenge(Number(e.target.value))} />
+                    <Input id="menge" type="number" placeholder="z. B. 53.4" value={menge} onChange={(e) => handleMengeChange(e.target.value)} />
                   </div>
                   <div>
                     <Label htmlFor="preis">Preis pro Liter (EUR)</Label>
@@ -132,6 +163,10 @@ export default function Kosten() {
                     <Label htmlFor="voll">Vollbetankung</Label>
                     <Switch id="voll" checked={voll} onCheckedChange={setVoll} />
                   </div>
+                  <div>
+                    <Label>Verbrauch (automatisch)</Label>
+                    <Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} />
+                  </div>
                 </div>
                 <div className="text-right">
                   <Button onClick={speichern}>Sichern</Button>
@@ -144,7 +179,7 @@ export default function Kosten() {
             <Card key={i} className="mb-4">
               <CardContent className="p-4">
                 <p className="text-base font-semibold">{e.datum} – {e.km} km – {e.sorte}</p>
-                <p className="text-sm">{e.menge} l • {e.gesamt} EUR • Verbrauch: {(e.menge && e.distanz ? ((e.menge / e.distanz) * 100).toFixed(1) : "?")} l/100km</p>
+                <p className="text-sm">{e.menge} l • {e.gesamt} EUR • Verbrauch: {e.verbrauch ?? "?"} l/100km</p>
                 {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
               </CardContent>
             </Card>
