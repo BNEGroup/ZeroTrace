@@ -9,37 +9,39 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 
 export default function Kosten() {
-  const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState("betankungen");
+  const [showAusgabenForm, setShowAusgabenForm] = useState(false);
 
   return (
     <div className="min-h-screen p-4 bg-background text-foreground">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Kostenübersicht</h1>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2">
-          <Plus size={16} /> Ausgaben hinzufügen
-        </Button>
+        {activeTab === "ausgaben" && (
+          <Button variant="outline" size="icon" onClick={() => setShowAusgabenForm(!showAusgabenForm)}>
+            <Plus size={18} />
+          </Button>
+        )}
       </div>
 
-      <Tabs defaultValue="betankungen" className="w-full">
-        <TabsList className="grid grid-cols-3 gap-2">
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-3 gap-2 w-full">
           <TabsTrigger value="betankungen">Betankungen</TabsTrigger>
           <TabsTrigger value="ausgaben">Ausgaben</TabsTrigger>
           <TabsTrigger value="erinnerungen">Erinnerungen</TabsTrigger>
         </TabsList>
 
-        {/* TAB: Betankungen */}
         <TabsContent value="betankungen">
           <div className="mt-4 space-y-4">
-            <Card className="bg-white dark:bg-zinc-900 shadow-md border border-gray-200 dark:border-zinc-700">
+            <Card className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-200 dark:border-zinc-700">
               <CardContent className="p-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <div>
                     <p className="text-base font-semibold">17.02.2025</p>
-                    <p className="text-sm text-gray-500">237.039 km • HVO100</p>
+                    <p className="text-sm text-muted-foreground">237.039 km • HVO100</p>
                   </div>
                   <div className="text-right">
                     <p className="text-base font-semibold text-red-600">7,12 l/100km</p>
-                    <p className="text-sm text-gray-500">53,40 l • 95,00 EUR</p>
+                    <p className="text-sm text-muted-foreground">53,40 l • 95,00 EUR</p>
                   </div>
                 </div>
               </CardContent>
@@ -47,10 +49,9 @@ export default function Kosten() {
           </div>
         </TabsContent>
 
-        {/* TAB: Ausgaben */}
         <TabsContent value="ausgaben">
           <div className="mt-4 space-y-4">
-            {showForm && (
+            {showAusgabenForm ? (
               <Card className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700">
                 <CardContent className="p-4 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -123,15 +124,12 @@ export default function Kosten() {
                   </div>
                 </CardContent>
               </Card>
-            )}
-
-            {!showForm && (
+            ) : (
               <p className="text-muted text-sm text-center">Noch keine Ausgaben erfasst.</p>
             )}
           </div>
         </TabsContent>
 
-        {/* TAB: Erinnerungen */}
         <TabsContent value="erinnerungen">
           <div className="mt-4">
             <p className="text-muted">Erinnerungen folgen in Kürze...</p>
