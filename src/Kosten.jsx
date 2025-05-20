@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Bell, Plus } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { checkbox } from "@/components/ui/checkbox";
 
 export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
@@ -125,20 +125,25 @@ export default function Kosten() {
   };
 
   const speichernAusgabe = () => {
-    const neuerEintrag = {
-      datum: new Date().toISOString().split("T")[0],
-      tachostand,
-      kostenart,
-      betrag: kosten,
-      bemerkung,
-      synced: false,
-    };
-    const stored = JSON.parse(localStorage.getItem("zerotrace"));
-    stored.vehicles[vin].ausgaben.unshift(neuerEintrag);
-    localStorage.setItem("zerotrace", JSON.stringify(stored));
-    setAusgaben([neuerEintrag, ...ausgaben]);
-    setShowForm(false);
+  const neuerEintrag = {
+    datum: new Date().toISOString().split("T")[0],
+    tachostand,
+    kostenart,
+    betrag: kosten,
+    waehrung: ausgabenWaehrung,  // <-- neu
+    bemerkung,
+    synced: false,
   };
+
+  const stored = JSON.parse(localStorage.getItem("zerotrace"));
+  if (!stored.vehicles[vin]) {
+    stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+  }
+  stored.vehicles[vin].ausgaben.unshift(neuerEintrag);
+  localStorage.setItem("zerotrace", JSON.stringify(stored));
+  setAusgaben([neuerEintrag, ...ausgaben]);
+  setShowForm(false);
+};
 
   const speichernErinnerung = () => {
     const neuerEintrag = {
