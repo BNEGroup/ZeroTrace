@@ -6,17 +6,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectItem } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
 
 export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
   const [showForm, setShowForm] = useState(false);
   const [entries, setEntries] = useState([]);
+  const [tachostand, setTachostand] = useState(0);
+  const [distanz, setDistanz] = useState(0);
   const [menge, setMenge] = useState(0);
   const [preisProLiter, setPreisProLiter] = useState(0);
   const [gesamtbetrag, setGesamtbetrag] = useState(0);
+  const [sorte, setSorte] = useState("HVO100");
+  const [voll, setVoll] = useState(true);
 
-  const vin = "WBA8H71020K659220"; // Platzhalter, später via BLE ersetzt
+  const vin = "WBA8H71020K659220";
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("zerotrace")) || {
@@ -26,18 +31,43 @@ export default function Kosten() {
     if (!stored.vehicles[vin]) {
       stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
     }
-    setEntries(stored.vehicles[vin].betankungen);
+    const fahrzeug = stored.vehicles[vin];
+    setEntries(fahrzeug.betankungen);
+
+    const letzte = fahrzeug.betankungen.at(-1);
+    if (letzte) {
+      setTachostand(letzte.km);
+      setSorte(letzte.sorte);
+    }
   }, []);
+
+  const aktualisiereBerechnung = () => {
+    if (menge && preisProLiter) setGesamtbetrag((menge * preisProLiter).toFixed(2));
+    else if (menge && gesamtbetrag) setPreisProLiter((gesamtbetrag / menge).toFixed(3));
+  };
+
+  const aktualisiereDistanzOderTacho = (neuDistanz, manuellDistanz = true) => {
+    const letzte = entries.at(-1);
+    const letzterStand = letzte?.km || 0;
+    if (manuellDistanz) {
+      setDistanz(neuDistanz);
+      setTachostand(letzterStand + neuDistanz);
+    } else {
+      setTachostand(neuDistanz);
+      setDistanz(neuDistanz - letzterStand);
+    }
+  };
 
   const speichern = () => {
     const neuerEintrag = {
       datum: new Date().toISOString().split("T")[0],
-      km: 0,
+      km: tachostand,
+      distanz,
       menge,
       preis_l: preisProLiter,
       gesamt: gesamtbetrag,
-      sorte: "HVO100",
-      verbrauch: parseFloat(((gesamtbetrag / menge / 100) * 100).toFixed(2)),
+      sorte,
+      voll,
       synced: false,
     };
 
@@ -55,6 +85,11 @@ export default function Kosten() {
     setEntries(stored.vehicles[vin].betankungen);
     setShowForm(false);
   };
+
+  const kraftstoffArten = [
+    "BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel", "Pflanzenöl",
+    "Super 95", "Super E10", "Super 98", "Super Plus 103", "LPG", "LNG", "Wasserstoff"
+  ];
 
   return (
     <div className="min-h-screen p-4 bg-background text-foreground">
@@ -82,16 +117,36 @@ export default function Kosten() {
                 <CardContent className="p-4 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
+                      <Label>Tachostand</Label>
+                      <Input type="number" value={tachostand} onChange={(e) => aktualisiereDistanzOderTacho(parseFloat(e.target.value), false)} />
+                    </div>
+                    <div>
+                      <Label>Distanz</Label>
+                      <Input type="number" value={distanz} onChange={(e) => aktualisiereDistanzOderTacho(parseFloat(e.target.value), true)} />
+                    </div>
+                    <div>
                       <Label>Menge (Liter)</Label>
                       <Input type="number" step="0.01" value={menge} onChange={(e) => setMenge(parseFloat(e.target.value))} />
                     </div>
                     <div>
-                      <Label>Preis pro Liter (EUR)</Label>
-                      <Input type="number" step="0.001" value={preisProLiter} onChange={(e) => setPreisProLiter(parseFloat(e.target.value))} />
+                      <Label>Preis pro Liter</Label>
+                      <Input type="number" step="0.001" value={preisProLiter} onChange={(e) => { setPreisProLiter(parseFloat(e.target.value)); aktualisiereBerechnung(); }} />
                     </div>
                     <div>
-                      <Label>Gesamtbetrag (EUR)</Label>
-                      <Input type="number" step="0.01" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(parseFloat(e.target.value))} />
+                      <Label>Gesamtbetrag</Label>
+                      <Input type="number" step="0.01" value={gesamtbetrag} onChange={(e) => { setGesamtbetrag(parseFloat(e.target.value)); aktualisiereBerechnung(); }} />
+                    </div>
+                    <div>
+                      <Label>Kraftstoffsorte</Label>
+                      <Select defaultValue={sorte} onValueChange={setSorte}>
+                        {kraftstoffArten.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label>Vollbetankung</Label>
+                      <Switch checked={voll} onCheckedChange={setVoll} />
                     </div>
                   </div>
                   <div className="text-right">
@@ -110,7 +165,7 @@ export default function Kosten() {
                       <p className="text-sm text-muted-foreground">{e.km} km • {e.sorte}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-base font-semibold text-red-600">{e.verbrauch} l/100km</p>
+                      <p className="text-base font-semibold text-red-600">{((e.gesamt / e.menge) * 100).toFixed(2)} l/100km</p>
                       <p className="text-sm text-muted-foreground">{e.menge} l • {e.gesamt} EUR</p>
                       {!e.synced && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
                     </div>
