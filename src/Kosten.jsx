@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Bell, Plus } from "lucide-react";
-import { Checkbox } from "@/components/ui/Checkbox";
+import { checkbox } from "@/components/ui/Checkbox";
 
 export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
