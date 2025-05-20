@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,22 +11,49 @@ import { Plus } from "lucide-react";
 export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
   const [showForm, setShowForm] = useState(false);
-
-  // Betankung State für automatische Berechnung
+  const [entries, setEntries] = useState([]);
   const [menge, setMenge] = useState(0);
   const [preisProLiter, setPreisProLiter] = useState(0);
   const [gesamtbetrag, setGesamtbetrag] = useState(0);
 
-  const berechneVonPreisProLiter = () => {
-    if (menge && preisProLiter) {
-      setGesamtbetrag((menge * preisProLiter).toFixed(2));
-    }
-  };
+  const vin = "WBA8H71020K659220"; // Platzhalter, später via BLE ersetzt
 
-  const berechneVonGesamtbetrag = () => {
-    if (menge && gesamtbetrag) {
-      setPreisProLiter((gesamtbetrag / menge).toFixed(3));
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("zerotrace")) || {
+      vehicles: {},
+      activeVin: vin,
+    };
+    if (!stored.vehicles[vin]) {
+      stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
     }
+    setEntries(stored.vehicles[vin].betankungen);
+  }, []);
+
+  const speichern = () => {
+    const neuerEintrag = {
+      datum: new Date().toISOString().split("T")[0],
+      km: 0,
+      menge,
+      preis_l: preisProLiter,
+      gesamt: gesamtbetrag,
+      sorte: "HVO100",
+      verbrauch: parseFloat(((gesamtbetrag / menge / 100) * 100).toFixed(2)),
+      synced: false,
+    };
+
+    const stored = JSON.parse(localStorage.getItem("zerotrace")) || {
+      vehicles: {},
+      activeVin: vin,
+    };
+
+    if (!stored.vehicles[vin]) {
+      stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+    }
+
+    stored.vehicles[vin].betankungen.push(neuerEintrag);
+    localStorage.setItem("zerotrace", JSON.stringify(stored));
+    setEntries(stored.vehicles[vin].betankungen);
+    setShowForm(false);
   };
 
   return (
@@ -55,126 +82,54 @@ export default function Kosten() {
                 <CardContent className="p-4 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>Datum</Label>
-                      <Input type="date" />
-                    </div>
-                    <div>
-                      <Label>Tachostand</Label>
-                      <Input type="number" placeholder="z. B. 237039" />
-                    </div>
-                    <div>
-                      <Label>Distanz (km)</Label>
-                      <Input type="number" step="0.1" />
-                    </div>
-                    <div>
                       <Label>Menge (Liter)</Label>
                       <Input type="number" step="0.01" value={menge} onChange={(e) => setMenge(parseFloat(e.target.value))} />
                     </div>
                     <div>
                       <Label>Preis pro Liter (EUR)</Label>
-                      <Input type="number" step="0.001" value={preisProLiter} onChange={(e) => {
-                        setPreisProLiter(parseFloat(e.target.value));
-                        berechneVonPreisProLiter();
-                      }} />
+                      <Input type="number" step="0.001" value={preisProLiter} onChange={(e) => setPreisProLiter(parseFloat(e.target.value))} />
                     </div>
                     <div>
                       <Label>Gesamtbetrag (EUR)</Label>
-                      <Input type="number" step="0.01" value={gesamtbetrag} onChange={(e) => {
-                        setGesamtbetrag(parseFloat(e.target.value));
-                        berechneVonGesamtbetrag();
-                      }} />
-                    </div>
-                    <div>
-                      <Label>Sorte</Label>
-                      <Input placeholder="z. B. HVO100" />
+                      <Input type="number" step="0.01" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(parseFloat(e.target.value))} />
                     </div>
                   </div>
                   <div className="text-right">
-                    <Button>Sichern</Button>
+                    <Button onClick={speichern}>Sichern</Button>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            <Card className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-200 dark:border-zinc-700">
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                  <div>
-                    <p className="text-base font-semibold">17.02.2025</p>
-                    <p className="text-sm text-muted-foreground">237.039 km • HVO100</p>
+            {entries.map((e, i) => (
+              <Card key={i} className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-200 dark:border-zinc-700">
+                <CardContent className="p-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                      <p className="text-base font-semibold">{e.datum}</p>
+                      <p className="text-sm text-muted-foreground">{e.km} km • {e.sorte}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-base font-semibold text-red-600">{e.verbrauch} l/100km</p>
+                      <p className="text-sm text-muted-foreground">{e.menge} l • {e.gesamt} EUR</p>
+                      {!e.synced && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-base font-semibold text-red-600">7,12 l/100km</p>
-                    <p className="text-sm text-muted-foreground">53,40 l • 95,00 EUR</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
 
         <TabsContent value="ausgaben">
-          <div className="mt-4 space-y-4">
-            {showForm ? (
-              <Card className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700">
-                <CardContent className="p-4 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Datum</Label>
-                      <Input type="date" />
-                    </div>
-                    <div>
-                      <Label>Tachostand</Label>
-                      <Input type="number" placeholder="z. B. 237677" />
-                    </div>
-                    <div>
-                      <Label>Kostenart</Label>
-                      <Input placeholder="z. B. Ladegrundgebühr" />
-                    </div>
-                    <div>
-                      <Label>Kosten</Label>
-                      <Input type="number" step="0.01" placeholder="z. B. 95.00" />
-                    </div>
-                    <div>
-                      <Label>Währung</Label>
-                      <Select>
-                        <SelectItem value="eur">EUR</SelectItem>
-                        <SelectItem value="huf">HUF</SelectItem>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Wiederholung</Label>
-                      <Input placeholder="z. B. alle 36 Monate" />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Bemerkung</Label>
-                    <Textarea placeholder="z. B. Artikelnummern, Beschreibung etc." />
-                  </div>
-                  <div>
-                    <Label>Anhang</Label>
-                    <Input type="file" />
-                  </div>
-                  <div className="text-right">
-                    <Button>Sichern</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <p className="text-muted text-sm text-center">Noch keine Ausgaben erfasst.</p>
-            )}
+          <div className="mt-4">
+            <p className="text-muted text-sm text-center">Ausgaben folgen...</p>
           </div>
         </TabsContent>
 
         <TabsContent value="erinnerungen">
           <div className="mt-4">
-            {showForm ? (
-              <Card className="p-4 text-center">
-                <p className="text-muted">Formular für Erinnerungen folgt ...</p>
-              </Card>
-            ) : (
-              <p className="text-muted text-sm text-center">Noch keine Erinnerungen gespeichert.</p>
-            )}
+            <p className="text-muted text-sm text-center">Erinnerungen folgen...</p>
           </div>
         </TabsContent>
       </Tabs>
