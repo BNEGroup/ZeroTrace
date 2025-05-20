@@ -1,4 +1,4 @@
-// FINAL KORREKTUR – KOMPLETTER FUNKTIONIERENDER KOSTEN.JSX
+// FINAL KOSTEN.JSX mit klaren Labels und Platzhaltern
 import { useEffect, useState } from "react";
 import {
   Tabs, TabsList, TabsTrigger, TabsContent
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 
 export default function Kosten() {
@@ -98,22 +97,40 @@ export default function Kosten() {
             <Card className="mb-6">
               <CardContent className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} placeholder="Tachostand" />
-                  <Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} placeholder="Distanz" />
-                  <Input type="number" value={menge} onChange={(e) => setMenge(Number(e.target.value))} placeholder="Menge (l)" />
-                  <Input type="number" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} placeholder="Preis/l" />
-                  <Input type="number" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} placeholder="Gesamtbetrag" />
-                  <Select defaultValue={sorte} onValueChange={setSorte}>
-                    <SelectTrigger>{sorte}</SelectTrigger>
-                    <SelectContent>
-                      {kraftstoffArten.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div>
+                    <Label htmlFor="tachostand">Tachostand (km)</Label>
+                    <Input id="tachostand" type="number" placeholder="z. B. 237123" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
+                  </div>
+                  <div>
+                    <Label htmlFor="distanz">Distanz (km)</Label>
+                    <Input id="distanz" type="number" placeholder="z. B. 630" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} />
+                  </div>
+                  <div>
+                    <Label htmlFor="menge">Menge (Liter)</Label>
+                    <Input id="menge" type="number" placeholder="z. B. 53.4" value={menge} onChange={(e) => setMenge(Number(e.target.value))} />
+                  </div>
+                  <div>
+                    <Label htmlFor="preis">Preis pro Liter (EUR)</Label>
+                    <Input id="preis" type="number" placeholder="z. B. 1.789" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} />
+                  </div>
+                  <div>
+                    <Label htmlFor="gesamt">Gesamtbetrag (EUR)</Label>
+                    <Input id="gesamt" type="number" placeholder="z. B. 95.00" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} />
+                  </div>
+                  <div>
+                    <Label htmlFor="sorte">Kraftstoffsorte</Label>
+                    <Select onValueChange={setSorte} defaultValue={sorte}>
+                      <SelectTrigger>{sorte}</SelectTrigger>
+                      <SelectContent>
+                        {kraftstoffArten.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <Label>Vollbetankung</Label>
-                    <Switch checked={voll} onCheckedChange={setVoll} />
+                    <Label htmlFor="voll">Vollbetankung</Label>
+                    <Switch id="voll" checked={voll} onCheckedChange={setVoll} />
                   </div>
                 </div>
                 <div className="text-right">
