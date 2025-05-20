@@ -5,18 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-
-const kraftstoffArten = ["BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel", "Pflanzenöl", "Super 95", "Super E10", "Super 98", "Super Plus 103", "LPG", "LNG", "Wasserstoff"];
-const reifenarten = ["Sommerreifen", "Winterreifen", "Ganzjahresreifen"];
-const waehrungen = ["EUR", "HUF", "USD"];
+import { kraftstoffArten, reifenarten, waehrungen } from "@/lib/utils";
 
 export default function BetankungForm({
-  speichern,
-  tachostand,
+  tachostand, setTachostand,
   letzterStand,
-  setTachostand,
-  setLetzterStand,
-  setShowForm,
+  speichern,
+  setShowForm
 }) {
   const [distanz, setDistanz] = useState(0);
   const [menge, setMenge] = useState(0);
@@ -25,17 +20,21 @@ export default function BetankungForm({
   const [sorte, setSorte] = useState("HVO100");
   const [voll, setVoll] = useState(true);
   const [verbrauch, setVerbrauch] = useState(null);
-  const [streckenprofil, setStreckenprofil] = useState([]);
-  const [optionen, setOptionen] = useState({ standheizung: false, anhaenger: false, klima: false });
+  const [waehrung, setWaehrung] = useState("EUR");
   const [reifen, setReifen] = useState("");
   const [tankstelle, setTankstelle] = useState("");
-  const [waehrung, setWaehrung] = useState("EUR");
+  const [streckenprofil, setStreckenprofil] = useState([]);
+  const [optionen, setOptionen] = useState({ standheizung: false, anhaenger: false, klima: false });
 
   useEffect(() => {
     const dist = tachostand - letzterStand;
     setDistanz(dist);
     if (dist > 0 && menge > 0) setVerbrauch(((menge / dist) * 100).toFixed(2));
-  }, [tachostand, menge, letzterStand]);
+  }, [tachostand]);
+
+  useEffect(() => {
+    if (distanz > 0 && menge > 0) setVerbrauch(((menge / distanz) * 100).toFixed(2));
+  }, [distanz, menge]);
 
   useEffect(() => {
     if (menge && preisProLiter) setGesamtbetrag((menge * preisProLiter).toFixed(2));
@@ -67,7 +66,6 @@ export default function BetankungForm({
       tankstelle,
       synced: false,
     });
-    setShowForm(false);
   };
 
   return (
@@ -79,7 +77,7 @@ export default function BetankungForm({
         </div>
         <div className="flex flex-col gap-1">
           <Label>Distanz</Label>
-          <Input type="number" value={distanz} readOnly />
+          <Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} />
         </div>
         <div className="flex flex-col gap-1">
           <Label>Menge (l)</Label>
@@ -96,15 +94,19 @@ export default function BetankungForm({
         <div className="flex flex-col gap-1">
           <Label>Währung</Label>
           <Select onValueChange={setWaehrung} defaultValue={waehrung}>
-            <SelectTrigger>{waehrung}</SelectTrigger>
-            <SelectContent>{waehrungen.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}</SelectContent>
+            <SelectTrigger className="w-full">{waehrung}</SelectTrigger>
+            <SelectContent>
+              {waehrungen.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+            </SelectContent>
           </Select>
         </div>
         <div className="flex flex-col gap-1">
           <Label>Kraftstoff</Label>
           <Select onValueChange={setSorte} defaultValue={sorte}>
-            <SelectTrigger>{sorte}</SelectTrigger>
-            <SelectContent>{kraftstoffArten.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            <SelectTrigger className="w-full">{sorte}</SelectTrigger>
+            <SelectContent>
+              {kraftstoffArten.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
           </Select>
         </div>
         <div className="flex items-center gap-2 mt-4">
@@ -153,9 +155,7 @@ export default function BetankungForm({
         <Select onValueChange={setReifen} defaultValue={reifen}>
           <SelectTrigger className="w-full">{reifen || "Reifentyp wählen"}</SelectTrigger>
           <SelectContent>
-            {reifenarten.map((r) => (
-              <SelectItem key={r} value={r}>{r}</SelectItem>
-            ))}
+            {reifenarten.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>

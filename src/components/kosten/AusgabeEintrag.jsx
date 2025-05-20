@@ -1,8 +1,8 @@
+// src/components/kosten/AusgabeEintrag.jsx
+
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function AusgabeEintrag({ eintrag }) {
-  if (!eintrag) return null;
-
   return (
     <Card className="mb-4">
       <CardContent className="p-4">
@@ -15,7 +15,7 @@ export default function AusgabeEintrag({ eintrag }) {
           {eintrag.bemerkung}
         </p>
         {eintrag.synced === false && (
-          <p className="text-xs text-yellow-500 mt-2">nicht synchronisiert</p>
+          <p className="text-xs text-yellow-500">nicht synchronisiert</p>
         )}
       </CardContent>
     </Card>
