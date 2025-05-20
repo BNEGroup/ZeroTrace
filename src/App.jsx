@@ -7,7 +7,9 @@ import {
   Droplet,
   Settings,
   Wrench,
+  Gauge,
 } from 'lucide-react';
+import Bordcomputer from './Bordcomputer';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -15,8 +17,7 @@ function App() {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'trip1', label: 'Trip 1', icon: MapPin },
-    { id: 'trip2', label: 'Trip 2', icon: MapPin },
+    { id: 'trip1', label: 'Bordcomputer', icon: Gauge },
     { id: 'statistik', label: 'Statistik', icon: BarChart2 },
     { id: 'verbrauch', label: 'Verbrauch', icon: Droplet },
     { id: 'service', label: 'Service', icon: Wrench },
@@ -83,14 +84,7 @@ function App() {
           )}
           {activeTab === 'trip1' && (
             <section>
-              <h2 className="text-2xl font-semibold mb-2">Trip 1</h2>
-              <p>Hier kommen die Trip 1 Daten.</p>
-            </section>
-          )}
-          {activeTab === 'trip2' && (
-            <section>
-              <h2 className="text-2xl font-semibold mb-2">Trip 2</h2>
-              <p>Hier kommen die Trip 2 Daten.</p>
+              <Bordcomputer />
             </section>
           )}
           {activeTab === 'statistik' && (
