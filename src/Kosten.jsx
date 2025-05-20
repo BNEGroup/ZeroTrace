@@ -12,6 +12,23 @@ export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
   const [showForm, setShowForm] = useState(false);
 
+  // Betankung State für automatische Berechnung
+  const [menge, setMenge] = useState(0);
+  const [preisProLiter, setPreisProLiter] = useState(0);
+  const [gesamtbetrag, setGesamtbetrag] = useState(0);
+
+  const berechneVonPreisProLiter = () => {
+    if (menge && preisProLiter) {
+      setGesamtbetrag((menge * preisProLiter).toFixed(2));
+    }
+  };
+
+  const berechneVonGesamtbetrag = () => {
+    if (menge && gesamtbetrag) {
+      setPreisProLiter((gesamtbetrag / menge).toFixed(3));
+    }
+  };
+
   return (
     <div className="min-h-screen p-4 bg-background text-foreground">
       <div className="flex items-center justify-between mb-4">
@@ -51,22 +68,28 @@ export default function Kosten() {
                     </div>
                     <div>
                       <Label>Menge (Liter)</Label>
-                      <Input type="number" step="0.01" />
+                      <Input type="number" step="0.01" value={menge} onChange={(e) => setMenge(parseFloat(e.target.value))} />
+                    </div>
+                    <div>
+                      <Label>Preis pro Liter (EUR)</Label>
+                      <Input type="number" step="0.001" value={preisProLiter} onChange={(e) => {
+                        setPreisProLiter(parseFloat(e.target.value));
+                        berechneVonPreisProLiter();
+                      }} />
+                    </div>
+                    <div>
+                      <Label>Gesamtbetrag (EUR)</Label>
+                      <Input type="number" step="0.01" value={gesamtbetrag} onChange={(e) => {
+                        setGesamtbetrag(parseFloat(e.target.value));
+                        berechneVonGesamtbetrag();
+                      }} />
                     </div>
                     <div>
                       <Label>Sorte</Label>
                       <Input placeholder="z. B. HVO100" />
                     </div>
-                    <div>
-                      <Label>Preis pro Liter</Label>
-                      <Input type="text" placeholder="z. B. 1,779 EUR" />
-                    </div>
-                    <div>
-                      <Label>Gesamtbetrag</Label>
-                      <Input type="text" placeholder="z. B. 95,00 EUR" />
-                    </div>
                   </div>
-                  <div>
+                  <div className="text-right">
                     <Button>Sichern</Button>
                   </div>
                 </CardContent>
@@ -106,28 +129,7 @@ export default function Kosten() {
                     </div>
                     <div>
                       <Label>Kostenart</Label>
-                      <Select>
-                        <SelectItem value="wartung">Wartung</SelectItem>
-                        <SelectItem value="reparatur">Reparatur</SelectItem>
-                        <SelectItem value="reifen">Reifenwechsel</SelectItem>
-                        <SelectItem value="ölwechsel">Ölwechsel</SelectItem>
-                        <SelectItem value="versicherung">Versicherung</SelectItem>
-                        <SelectItem value="steuer">Steuer</SelectItem>
-                        <SelectItem value="hu">HU/AU (TÜV)</SelectItem>
-                        <SelectItem value="tuning">Tuning</SelectItem>
-                        <SelectItem value="zubehör">Zubehör</SelectItem>
-                        <SelectItem value="kauf">Kaufpreis</SelectItem>
-                        <SelectItem value="pflege">Wagenpflege</SelectItem>
-                        <SelectItem value="leasing">Leasingrate</SelectItem>
-                        <SelectItem value="zulassung">Zulassung/Ummeldung</SelectItem>
-                        <SelectItem value="finanzierung">Finanzierungsrate</SelectItem>
-                        <SelectItem value="erstattung">Erstattung</SelectItem>
-                        <SelectItem value="bußgeld">Bußgeld</SelectItem>
-                        <SelectItem value="parkgebühr">Parkgebühr</SelectItem>
-                        <SelectItem value="maut">Maut</SelectItem>
-                        <SelectItem value="ersatzteile">Ersatzteile</SelectItem>
-                        <SelectItem value="sonstiges">Sonstiges</SelectItem>
-                      </Select>
+                      <Input placeholder="z. B. Ladegrundgebühr" />
                     </div>
                     <div>
                       <Label>Kosten</Label>
@@ -142,14 +144,7 @@ export default function Kosten() {
                     </div>
                     <div>
                       <Label>Wiederholung</Label>
-                      <Select>
-                        <SelectItem value="keine">Keine</SelectItem>
-                        <SelectItem value="1m">Monatlich</SelectItem>
-                        <SelectItem value="3m">Alle 3 Monate</SelectItem>
-                        <SelectItem value="6m">Alle 6 Monate</SelectItem>
-                        <SelectItem value="12m">Jährlich</SelectItem>
-                        <SelectItem value="24m">Alle 2 Jahre</SelectItem>
-                      </Select>
+                      <Input placeholder="z. B. alle 36 Monate" />
                     </div>
                   </div>
                   <div>
