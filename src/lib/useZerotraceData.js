@@ -7,7 +7,7 @@ const initialData = {
   activeVin: "WBA8H71020K659220"
 };
 
-export function useZerotraceData() {
+export default function useZerotraceData() {
   const [entries, setEntries] = useState([]);
   const [ausgaben, setAusgaben] = useState([]);
   const [erinnerungen, setErinnerungen] = useState([]);
