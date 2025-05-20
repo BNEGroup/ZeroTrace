@@ -12,6 +12,25 @@ export default function useZerotraceData() {
   const [ausgaben, setAusgaben] = useState([]);
   const [erinnerungen, setErinnerungen] = useState([]);
   const [letzterStand, setLetzterStand] = useState(0);
+
+  const [tachostand, setTachostand] = useState(0);
+  const [distanz, setDistanz] = useState(0);
+  const [menge, setMenge] = useState(0);
+  const [preisProLiter, setPreisProLiter] = useState(0);
+  const [gesamtbetrag, setGesamtbetrag] = useState(0);
+  const [sorte, setSorte] = useState("HVO100");
+  const [voll, setVoll] = useState(true);
+  const [verbrauch, setVerbrauch] = useState(null);
+  const [waehrung, setWaehrung] = useState("EUR");
+  const [reifen, setReifen] = useState("");
+  const [tankstelle, setTankstelle] = useState("");
+  const [streckenprofil, setStreckenprofil] = useState([]);
+  const [optionen, setOptionen] = useState({ standheizung: false, anhaenger: false, klima: false });
+
+  const waehrungen = ["EUR", "HUF", "USD"];
+  const kraftstoffArten = ["BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel", "Pflanzenöl", "Super 95", "Super E10", "Super 98", "Super Plus 103", "LPG", "LNG", "Wasserstoff"];
+  const reifenarten = ["Sommerreifen", "Winterreifen", "Ganzjahresreifen"];
+
   const vin = initialData.activeVin;
 
   useEffect(() => {
@@ -28,6 +47,8 @@ export default function useZerotraceData() {
       const letzte = fahrzeug.betankungen.at(-1);
       if (letzte) {
         setLetzterStand(letzte.km);
+        setTachostand(letzte.km);
+        setSorte(letzte.sorte);
       }
     };
 
@@ -69,6 +90,38 @@ export default function useZerotraceData() {
     ausgaben,
     erinnerungen,
     letzterStand,
+    tachostand,
+    setTachostand,
+    distanz,
+    setDistanz,
+    menge,
+    setMenge,
+    preisProLiter,
+    setPreisProLiter,
+    gesamtbetrag,
+    setGesamtbetrag,
+    sorte,
+    setSorte,
+    voll,
+    setVoll,
+    verbrauch,
+    waehrung,
+    setWaehrung,
+    reifen,
+    setReifen,
+    tankstelle,
+    setTankstelle,
+    streckenprofil,
+    setStreckenprofil,
+    optionen,
+    setOptionen,
+    waehrungen,
+    kraftstoffArten,
+    reifenarten,
+    vin,
+    setEntries,
+    setAusgaben,
+    setErinnerungen,
     speichernBetankung,
     speichernAusgabe,
     speichernErinnerung

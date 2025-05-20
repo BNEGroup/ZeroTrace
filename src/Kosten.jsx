@@ -54,14 +54,41 @@ export default function Kosten() {
 
         <TabsContent value="betankungen">
           {showForm && activeTab === "betankungen" && (
-            <BetankungForm
-              speichern={speichernBetankung}
-              tachostand={tachostand}
-              letzterStand={letzterStand}
-              setTachostand={setTachostand}
-              setLetzterStand={setLetzterStand}
-              setShowForm={setShowForm}
-            />
+        <BetankungForm
+            speichern={speichernBetankung}
+            tachostand={tachostand}
+            setTachostand={setTachostand}
+            distanz={distanz}
+            setDistanz={setDistanz}
+            menge={menge}
+            setMenge={setMenge}
+            preisProLiter={preisProLiter}
+            setPreisProLiter={setPreisProLiter}
+            gesamtbetrag={gesamtbetrag}
+            setGesamtbetrag={setGesamtbetrag}
+            waehrung={waehrung}
+            setWaehrung={setWaehrung}
+            sorte={sorte}
+            setSorte={setSorte}
+            voll={voll}
+            setVoll={setVoll}
+            verbrauch={verbrauch}
+            streckenprofil={streckenprofil}
+            setStreckenprofil={setStreckenprofil}
+            optionen={optionen}
+            setOptionen={setOptionen}
+            reifen={reifen}
+            setReifen={setReifen}
+            tankstelle={tankstelle}
+            setTankstelle={setTankstelle}
+            waehrungen={waehrungen}
+            kraftstoffArten={kraftstoffArten}
+            reifenarten={reifenarten}
+            vin={vin}
+            setEntries={setEntries}
+            entries={entries}
+            setShowForm={setShowForm}
+        />  
           )}
           {activeTab === "betankungen" && entries.map((e, i) => (
             <BetankungEintrag key={i} eintrag={e} />
