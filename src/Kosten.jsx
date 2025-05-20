@@ -258,8 +258,8 @@ export default function Kosten() {
         </p>
       )}
       {e.tankstelle && <p className="text-sm text-muted-foreground">Tankstelle: {e.tankstelle}</p>}
-      {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
       {e.reifen && <p className="text-sm text-muted-foreground">Reifen: {e.reifen}</p>}
+      {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
     </CardContent></Card>
   ))}
 </TabsContent>
