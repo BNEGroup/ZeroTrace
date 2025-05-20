@@ -10,6 +10,7 @@ import {
   Gauge,
 } from 'lucide-react';
 import Bordcomputer from './Bordcomputer';
+import Kosten from './Kosten';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -19,7 +20,7 @@ function App() {
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'trip1', label: 'Bordcomputer', icon: Gauge },
     { id: 'statistik', label: 'Statistik', icon: BarChart2 },
-    { id: 'verbrauch', label: 'Verbrauch', icon: Droplet },
+    { id: 'kosten', label: 'Kosten', icon: Droplet }, // ehemals 'verbrauch'
     { id: 'service', label: 'Service', icon: Wrench },
     { id: 'einstellungen', label: 'Einstellungen', icon: Settings },
   ];
@@ -93,10 +94,9 @@ function App() {
               <p>Hier kommen Statistiken und Graphen.</p>
             </section>
           )}
-          {activeTab === 'verbrauch' && (
+          {activeTab === 'kosten' && (
             <section>
-              <h2 className="text-2xl font-semibold mb-2">Verbrauch</h2>
-              <p>Kraftstoffverbrauch & Tankbuch.</p>
+              <Kosten />
             </section>
           )}
           {activeTab === 'service' && (
