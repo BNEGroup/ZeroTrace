@@ -1,4 +1,6 @@
-// KOSTEN.JSX – finaler vollständiger Code mit sauberen Labels, Logik & allen Tabs
+// KOSTEN.JSX – Erweiterter Code: Währungsauswahl, Fahrweise, Strecke, Reifen, Tankstelle
+// Basierend auf deinem originalen, funktionierenden Stand – nur erweitert, nichts gelöscht
+
 import { useEffect, useState } from "react";
 import {
   Tabs, TabsList, TabsTrigger, TabsContent
@@ -31,6 +33,12 @@ export default function Kosten() {
   const [verbrauch, setVerbrauch] = useState(null);
   const [letzterStand, setLetzterStand] = useState(0);
 
+  const [waehrung, setWaehrung] = useState("EUR");
+  const [fahrweise, setFahrweise] = useState("");
+  const [strecke, setStrecke] = useState("");
+  const [reifen, setReifen] = useState("");
+  const [tankstelle, setTankstelle] = useState("");
+
   const [kostenart, setKostenart] = useState("");
   const [kosten, setKosten] = useState("");
   const [bemerkung, setBemerkung] = useState("");
@@ -44,6 +52,10 @@ export default function Kosten() {
   const kraftstoffArten = ["BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel", "Pflanzenöl", "Super 95", "Super E10", "Super 98", "Super Plus 103", "LPG", "LNG", "Wasserstoff"];
   const kostenarten = ["Wartung", "Reparatur", "Versicherung", "Steuer", "Zubehör", "Tuning", "HU/AU", "Reifen", "Pflege", "Sonstiges"];
   const wiederholungen = ["Keine", "Jährlich", "Alle 2 Jahre", "Alle 3 Jahre", "Alle 6 Monate"];
+  const waehrungen = ["EUR", "HUF", "USD"];
+  const fahrweisen = ["Stadt", "Landstraße", "Autobahn", "Gemischt"];
+  const streckenarten = ["Kurzstrecke", "Langstrecke", "Gemischt"];
+  const reifenarten = ["Sommerreifen", "Winterreifen", "Ganzjahresreifen"];
 
   const vin = "WBA8H71020K659220";
 
