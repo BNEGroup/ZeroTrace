@@ -43,6 +43,7 @@ export default function Kosten() {
   const [kostenart, setKostenart] = useState("");
   const [kosten, setKosten] = useState("");
   const [bemerkung, setBemerkung] = useState("");
+  const [ausgabenWaehrung, setAusgabenWaehrung] = useState("EUR");
 
   const [titel, setTitel] = useState("");
   const [beschreibung, setBeschreibung] = useState("");
@@ -253,34 +254,63 @@ export default function Kosten() {
   ))}
 </TabsContent>
 
-        <TabsContent value="ausgaben">
-          {showForm && activeTab === "ausgaben" && (
-            <Card className="mb-6"><CardContent className="p-4 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><Label>Tachostand</Label><Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} /></div>
-                <div><Label>Kostenart</Label>
-                  <Select onValueChange={setKostenart} defaultValue={kostenart}>
-                    <SelectTrigger>{kostenart || "Kostenart wählen"}</SelectTrigger>
-                    <SelectContent>
-                      {kostenarten.map((k) => (<SelectItem key={k} value={k}>{k}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div><Label>Betrag (EUR)</Label><Input type="number" value={kosten} onChange={(e) => setKosten(e.target.value)} /></div>
-              </div>
-              <div><Label>Bemerkung</Label><Textarea value={bemerkung} onChange={(e) => setBemerkung(e.target.value)} /></div>
-              <div className="text-right"><Button onClick={speichernAusgabe}>Sichern</Button></div>
-            </CardContent></Card>
-          )}
+<TabsContent value="ausgaben">
+  {showForm && activeTab === "ausgaben" && (
+    <Card className="mb-6">
+      <CardContent className="p-4 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label>Tachostand</Label>
+            <Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
+          </div>
+          <div>
+            <Label>Kostenart</Label>
+            <Select onValueChange={setKostenart} defaultValue={kostenart}>
+              <SelectTrigger>{kostenart || "Kostenart wählen"}</SelectTrigger>
+              <SelectContent>
+                {kostenarten.map((k) => (
+                  <SelectItem key={k} value={k}>{k}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Betrag</Label>
+            <Input type="number" value={kosten} onChange={(e) => setKosten(e.target.value)} />
+          </div>
+          <div>
+            <Label>Währung</Label>
+            <Select onValueChange={setAusgabenWaehrung} defaultValue={ausgabenWaehrung}>
+              <SelectTrigger>{ausgabenWaehrung}</SelectTrigger>
+              <SelectContent>
+                {waehrungen.map((w) => (
+                  <SelectItem key={w} value={w}>{w}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div>
+          <Label>Bemerkung</Label>
+          <Textarea value={bemerkung} onChange={(e) => setBemerkung(e.target.value)} />
+        </div>
+        <div className="text-right">
+          <Button onClick={speichernAusgabe}>Sichern</Button>
+        </div>
+      </CardContent>
+    </Card>
+  )}
 
-          {ausgaben.map((e, i) => (
-            <Card key={i} className="mb-4"><CardContent className="p-4">
-              <p className="font-semibold">{e.datum} – {e.tachostand} km – {e.kostenart}</p>
-              <p className="text-sm">{e.betrag} EUR<br />{e.bemerkung}</p>
-              {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
-            </CardContent></Card>
-          ))}
-        </TabsContent>
+  {ausgaben.map((e, i) => (
+    <Card key={i} className="mb-4">
+      <CardContent className="p-4">
+        <p className="font-semibold">{e.datum} – {e.tachostand} km – {e.kostenart}</p>
+        <p className="text-sm">{e.betrag} {e.waehrung || "EUR"}<br />{e.bemerkung}</p>
+        {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
+      </CardContent>
+    </Card>
+  ))}
+</TabsContent>
 
         <TabsContent value="erinnerungen">
           {showForm && activeTab === "erinnerungen" && (
