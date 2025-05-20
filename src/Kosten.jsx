@@ -1,4 +1,4 @@
-// KOSTEN.JSX mit automatischer Verbrauchsberechnung und Distanzlogik
+// KOSTEN.JSX – mit vollständiger Berechnungslogik und CAN-Bus Vorbereitung
 import { useEffect, useState } from "react";
 import {
   Tabs, TabsList, TabsTrigger, TabsContent
@@ -47,38 +47,36 @@ export default function Kosten() {
     setEntries(fahrzeug.betankungen);
     const letzte = fahrzeug.betankungen.at(-1);
     if (letzte) {
-      setTachostand(letzte.km);
       setLetzterStand(letzte.km);
+      setTachostand(letzte.km);
       setSorte(letzte.sorte);
+    } else {
+      updateTachoFromCAN(); // fallback für erstes Fahrzeug
     }
   }, []);
 
-  const handleDistanzChange = (value) => {
-    const dist = Number(value);
-    setDistanz(dist);
-    setTachostand(letzterStand + dist);
-    if (dist && menge) {
-      setVerbrauch(((menge / dist) * 100).toFixed(2));
-    }
-  };
+  function updateTachoFromCAN() {
+    // Simuliert CAN-Bus-Abfrage → z. B. 237000
+    const tacho = 237000;
+    setLetzterStand(tacho);
+    setTachostand(tacho);
+  }
 
-  const handleTachostandChange = (value) => {
-    const stand = Number(value);
-    setTachostand(stand);
-    const dist = stand - letzterStand;
+  useEffect(() => {
+    const dist = tachostand - letzterStand;
     setDistanz(dist);
-    if (dist && menge) {
-      setVerbrauch(((menge / dist) * 100).toFixed(2));
-    }
-  };
+    if (dist > 0 && menge > 0) setVerbrauch(((menge / dist) * 100).toFixed(2));
+  }, [tachostand]);
 
-  const handleMengeChange = (value) => {
-    const liter = Number(value);
-    setMenge(liter);
-    if (distanz && liter) {
-      setVerbrauch(((liter / distanz) * 100).toFixed(2));
-    }
-  };
+  useEffect(() => {
+    if (distanz > 0 && menge > 0) setVerbrauch(((menge / distanz) * 100).toFixed(2));
+  }, [distanz, menge]);
+
+  useEffect(() => {
+    if (menge && preisProLiter) setGesamtbetrag((menge * preisProLiter).toFixed(2));
+    else if (menge && gesamtbetrag) setPreisProLiter((gesamtbetrag / menge).toFixed(3));
+    else if (preisProLiter && gesamtbetrag) setMenge((gesamtbetrag / preisProLiter).toFixed(2));
+  }, [menge, preisProLiter, gesamtbetrag]);
 
   const speichern = () => {
     const neuerEintrag = {
@@ -129,27 +127,27 @@ export default function Kosten() {
               <CardContent className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="tachostand">Tachostand (km)</Label>
-                    <Input id="tachostand" type="number" placeholder="z. B. 237123" value={tachostand} onChange={(e) => handleTachostandChange(e.target.value)} />
+                    <Label>Tachostand (km)</Label>
+                    <Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
                   </div>
                   <div>
-                    <Label htmlFor="distanz">Distanz (km)</Label>
-                    <Input id="distanz" type="number" placeholder="z. B. 630" value={distanz} onChange={(e) => handleDistanzChange(e.target.value)} />
+                    <Label>Distanz (km)</Label>
+                    <Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} />
                   </div>
                   <div>
-                    <Label htmlFor="menge">Menge (Liter)</Label>
-                    <Input id="menge" type="number" placeholder="z. B. 53.4" value={menge} onChange={(e) => handleMengeChange(e.target.value)} />
+                    <Label>Menge (l)</Label>
+                    <Input type="number" value={menge} onChange={(e) => setMenge(Number(e.target.value))} />
                   </div>
                   <div>
-                    <Label htmlFor="preis">Preis pro Liter (EUR)</Label>
-                    <Input id="preis" type="number" placeholder="z. B. 1.789" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} />
+                    <Label>Preis pro Liter (EUR)</Label>
+                    <Input type="number" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} />
                   </div>
                   <div>
-                    <Label htmlFor="gesamt">Gesamtbetrag (EUR)</Label>
-                    <Input id="gesamt" type="number" placeholder="z. B. 95.00" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} />
+                    <Label>Gesamtbetrag (EUR)</Label>
+                    <Input type="number" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} />
                   </div>
                   <div>
-                    <Label htmlFor="sorte">Kraftstoffsorte</Label>
+                    <Label>Kraftstoffsorte</Label>
                     <Select onValueChange={setSorte} defaultValue={sorte}>
                       <SelectTrigger>{sorte}</SelectTrigger>
                       <SelectContent>
@@ -160,11 +158,11 @@ export default function Kosten() {
                     </Select>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="voll">Vollbetankung</Label>
-                    <Switch id="voll" checked={voll} onCheckedChange={setVoll} />
+                    <Label>Vollbetankung</Label>
+                    <Switch checked={voll} onCheckedChange={setVoll} />
                   </div>
                   <div>
-                    <Label>Verbrauch (automatisch)</Label>
+                    <Label>Verbrauch (berechnet)</Label>
                     <Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} />
                   </div>
                 </div>
