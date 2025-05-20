@@ -230,7 +230,6 @@ export default function Kosten() {
           </div>
         </div>
 
-        // Reifentyp-Auswahlfeld ergänzen (nach Zusatzoptionen)
         <div className="col-span-2">
             <Label>Reifentyp</Label>
             <Select onValueChange={setReifen} defaultValue={reifen}>
