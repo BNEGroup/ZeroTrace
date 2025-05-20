@@ -10,20 +10,21 @@ import { Plus } from "lucide-react";
 
 export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
-  const [showAusgabenForm, setShowAusgabenForm] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   return (
     <div className="min-h-screen p-4 bg-background text-foreground">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Kostenübersicht</h1>
-        {activeTab === "ausgaben" && (
-          <Button variant="outline" size="icon" onClick={() => setShowAusgabenForm(!showAusgabenForm)}>
-            <Plus size={18} />
-          </Button>
-        )}
+        <Button variant="outline" size="icon" onClick={() => setShowForm(!showForm)}>
+          <Plus size={18} />
+        </Button>
       </div>
 
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs defaultValue={activeTab} onValueChange={(value) => {
+        setActiveTab(value);
+        setShowForm(false);
+      }} className="w-full">
         <TabsList className="grid grid-cols-3 gap-2 w-full">
           <TabsTrigger value="betankungen">Betankungen</TabsTrigger>
           <TabsTrigger value="ausgaben">Ausgaben</TabsTrigger>
@@ -32,6 +33,46 @@ export default function Kosten() {
 
         <TabsContent value="betankungen">
           <div className="mt-4 space-y-4">
+            {showForm && (
+              <Card className="border border-gray-200 dark:border-zinc-700">
+                <CardContent className="p-4 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Datum</Label>
+                      <Input type="date" />
+                    </div>
+                    <div>
+                      <Label>Tachostand</Label>
+                      <Input type="number" placeholder="z. B. 237039" />
+                    </div>
+                    <div>
+                      <Label>Distanz (km)</Label>
+                      <Input type="number" step="0.1" />
+                    </div>
+                    <div>
+                      <Label>Menge (Liter)</Label>
+                      <Input type="number" step="0.01" />
+                    </div>
+                    <div>
+                      <Label>Sorte</Label>
+                      <Input placeholder="z. B. HVO100" />
+                    </div>
+                    <div>
+                      <Label>Preis pro Liter</Label>
+                      <Input type="text" placeholder="z. B. 1,779 EUR" />
+                    </div>
+                    <div>
+                      <Label>Gesamtbetrag</Label>
+                      <Input type="text" placeholder="z. B. 95,00 EUR" />
+                    </div>
+                  </div>
+                  <div>
+                    <Button>Sichern</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-200 dark:border-zinc-700">
               <CardContent className="p-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -51,7 +92,7 @@ export default function Kosten() {
 
         <TabsContent value="ausgaben">
           <div className="mt-4 space-y-4">
-            {showAusgabenForm ? (
+            {showForm ? (
               <Card className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700">
                 <CardContent className="p-4 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -132,7 +173,13 @@ export default function Kosten() {
 
         <TabsContent value="erinnerungen">
           <div className="mt-4">
-            <p className="text-muted">Erinnerungen folgen in Kürze...</p>
+            {showForm ? (
+              <Card className="p-4 text-center">
+                <p className="text-muted">Formular für Erinnerungen folgt ...</p>
+              </Card>
+            ) : (
+              <p className="text-muted text-sm text-center">Noch keine Erinnerungen gespeichert.</p>
+            )}
           </div>
         </TabsContent>
       </Tabs>
