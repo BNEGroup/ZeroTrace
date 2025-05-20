@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Bell, Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/Checkbox";
 
 export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
@@ -48,6 +49,11 @@ export default function Kosten() {
   const [faellig, setFaellig] = useState("");
   const [wiederholung, setWiederholung] = useState("Keine");
   const [fälligKm, setFälligKm] = useState("");
+
+  const [streckenprofil, setStreckenprofil] = useState([]);
+  const [optionen, setOptionen] = useState({ standheizung: false, anhaenger: false, klima: false });
+
+  const toggleProfil = (wert) => {setStreckenprofil((prev) =>prev.includes(wert) ? prev.filter((v) => v !== wert) : [...prev, wert]);};
 
   const kraftstoffArten = ["BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel", "Pflanzenöl", "Super 95", "Super E10", "Super 98", "Super Plus 103", "LPG", "LNG", "Wasserstoff"];
   const kostenarten = ["Wartung", "Reparatur", "Versicherung", "Steuer", "Zubehör", "Tuning", "HU/AU", "Reifen", "Pflege", "Sonstiges"];
@@ -107,6 +113,8 @@ export default function Kosten() {
       sorte,
       voll,
       verbrauch,
+      streckenprofil,
+      optionen,
       synced: false,
     };
     const stored = JSON.parse(localStorage.getItem("zerotrace"));
@@ -168,41 +176,77 @@ export default function Kosten() {
           <TabsTrigger value="erinnerungen">Erinnerungen</TabsTrigger>
         </TabsList>
 
-// ... TabsContent für Betankungen mit erweiterten Feldern
-        <TabsContent value="betankungen">
-        {showForm && activeTab === "betankungen" && (
-            <Card className="mb-6">
-                <CardContent className="p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><Label>Tachostand</Label><Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} /></div>
-                <div><Label>Distanz</Label><Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} /></div>
-                <div><Label>Menge (l)</Label><Input type="number" value={menge} onChange={(e) => setMenge(Number(e.target.value))} /></div>
-                <div><Label>Preis pro Liter</Label><Input type="number" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} /></div>
-                <div><Label>Gesamtbetrag</Label><Input type="number" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} /></div>
-                <div><Label>Währung</Label><Select onValueChange={setWaehrung} defaultValue={waehrung}><SelectTrigger>{waehrung}</SelectTrigger><SelectContent>{waehrungen.map(w => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select></div>
-                <div><Label>Kraftstoff</Label><Select onValueChange={setSorte} defaultValue={sorte}><SelectTrigger>{sorte}</SelectTrigger><SelectContent>{kraftstoffArten.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent></Select></div>
-                <div><Label>Vollbetankung</Label><Switch checked={voll} onCheckedChange={setVoll} /></div>
-                <div><Label>Verbrauch</Label><Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} /></div>
-                <div><Label>Fahrweise</Label><Select onValueChange={setFahrweise} defaultValue={fahrweise}><SelectTrigger>{fahrweise || "Fahrweise wählen"}</SelectTrigger><SelectContent>{fahrweisen.map(f => (<SelectItem key={f} value={f}>{f}</SelectItem>))}</SelectContent></Select></div>
-                <div><Label>Streckenart</Label><Select onValueChange={setStrecke} defaultValue={strecke}><SelectTrigger>{strecke || "Streckenart wählen"}</SelectTrigger><SelectContent>{streckenarten.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent></Select></div>
-                <div><Label>Reifentyp</Label><Select onValueChange={setReifen} defaultValue={reifen}><SelectTrigger>{reifen || "Reifentyp wählen"}</SelectTrigger><SelectContent>{reifenarten.map(r => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
-                <div><Label>Tankstelle</Label><Input type="text" value={tankstelle} onChange={(e) => setTankstelle(e.target.value)} /></div>
-                </div>
-                <div className="text-right"><Button onClick={speichernBetankung}>Sichern</Button></div>
-            </CardContent>
-         </Card>
-         )}
+<TabsContent value="betankungen">
+  {showForm && activeTab === "betankungen" && (
+    <Card className="mb-6">
+      <CardContent className="p-4 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><Label>Tachostand</Label><Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} /></div>
+          <div><Label>Distanz</Label><Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} /></div>
+          <div><Label>Menge (l)</Label><Input type="number" value={menge} onChange={(e) => setMenge(Number(e.target.value))} /></div>
+          <div><Label>Preis pro Liter</Label><Input type="number" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} /></div>
+          <div><Label>Gesamtbetrag</Label><Input type="number" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} /></div>
+          <div><Label>Währung</Label><Select onValueChange={setWaehrung} defaultValue={waehrung}><SelectTrigger>{waehrung}</SelectTrigger><SelectContent>{waehrungen.map(w => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select></div>
+          <div><Label>Kraftstoff</Label><Select onValueChange={setSorte} defaultValue={sorte}><SelectTrigger>{sorte}</SelectTrigger><SelectContent>{kraftstoffArten.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent></Select></div>
+          <div className="flex items-center gap-2"><Label>Vollbetankung</Label><Switch checked={voll} onCheckedChange={setVoll} /></div>
+          <div><Label>Verbrauch</Label><Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} /></div>
+          <div className="col-span-2"><Label>Tankstelle</Label><Input type="text" value={tankstelle} onChange={(e) => setTankstelle(e.target.value)} /></div>
+        </div>
 
-        {entries.map((e, i) => (
-            <Card key={i} className="mb-4"><CardContent className="p-4">
-            <p className="font-semibold">{e.datum} – {e.km} km – {e.sorte}</p>
-            <p className="text-sm">{e.menge} l • {e.gesamt} {e.waehrung || 'EUR'} • Verbrauch: {e.verbrauch ?? "?"} l/100km</p>
-          {e.fahrweise && <p className="text-sm text-muted-foreground">Fahrweise: {e.fahrweise}, Strecke: {e.strecke}, Reifen: {e.reifen}</p>}
-          {e.tankstelle && <p className="text-sm text-muted-foreground">Tankstelle: {e.tankstelle}</p>}
-          {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
-            </CardContent></Card>
-         ))}
-        </TabsContent>
+        {/* Streckenprofil + Optionen Checkboxen */}
+        <div className="col-span-2 mt-4">
+          <Label>Streckenprofil</Label>
+          <div className="flex flex-wrap gap-4 mt-2">
+            {["Stadt", "Landstraße", "Autobahn"].map((wert) => (
+              <div key={wert} className="flex items-center gap-2">
+                <Checkbox id={wert} checked={streckenprofil.includes(wert)} onCheckedChange={() => toggleProfil(wert)} />
+                <label htmlFor={wert}>{wert}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="col-span-2">
+          <Label>Zusatzoptionen</Label>
+          <div className="flex flex-wrap gap-4 mt-2">
+            <div className="flex items-center gap-2">
+              <Checkbox checked={optionen.standheizung} onCheckedChange={() => setOptionen(o => ({ ...o, standheizung: !o.standheizung }))} />
+              <label>mit Standheizung</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox checked={optionen.anhaenger} onCheckedChange={() => setOptionen(o => ({ ...o, anhaenger: !o.anhaenger }))} />
+              <label>mit Anhänger</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox checked={optionen.klima} onCheckedChange={() => setOptionen(o => ({ ...o, klima: !o.klima }))} />
+              <label>mit Klimaanlage</label>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-right"><Button onClick={speichernBetankung}>Sichern</Button></div>
+      </CardContent>
+    </Card>
+  )}
+
+  {entries.map((e, i) => (
+    <Card key={i} className="mb-4"><CardContent className="p-4">
+      <p className="font-semibold">{e.datum} – {e.km} km – {e.sorte}</p>
+      <p className="text-sm">{e.menge} l • {e.gesamt} {e.waehrung || 'EUR'} • Verbrauch: {e.verbrauch ?? "?"} l/100km</p>
+      {e.streckenprofil?.length > 0 && <p className="text-sm text-muted-foreground">Strecke: {e.streckenprofil.join(", ")}</p>}
+      {(e.optionen?.standheizung || e.optionen?.anhaenger || e.optionen?.klima) && (
+        <p className="text-sm text-muted-foreground">
+          Optionen:
+          {e.optionen.standheizung ? " Standheizung" : ""}
+          {e.optionen.anhaenger ? ", Anhänger" : ""}
+          {e.optionen.klima ? ", Klimaanlage" : ""}
+        </p>
+      )}
+      {e.tankstelle && <p className="text-sm text-muted-foreground">Tankstelle: {e.tankstelle}</p>}
+      {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
+    </CardContent></Card>
+  ))}
+</TabsContent>
 
         <TabsContent value="ausgaben">
           {showForm && activeTab === "ausgaben" && (
