@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Bell, Plus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import localforage from "localforage";
 
 export default function Kosten() {
   const [activeTab, setActiveTab] = useState("betankungen");
@@ -65,25 +66,34 @@ export default function Kosten() {
   const vin = "WBA8H71020K659220";
 
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("zerotrace")) || {
+  import localforage from "localforage";
+
+useEffect(() => {
+  const ladeDaten = async () => {
+    const stored = await localforage.getItem("zerotrace") || {
       vehicles: {},
       activeVin: vin,
     };
+
     if (!stored.vehicles[vin]) {
       stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
     }
+
     const fahrzeug = stored.vehicles[vin];
     setEntries([...fahrzeug.betankungen].reverse());
     setAusgaben([...fahrzeug.ausgaben].reverse());
     setErinnerungen([...fahrzeug.erinnerungen].reverse());
+
     const letzte = fahrzeug.betankungen.at(-1);
     if (letzte) {
       setLetzterStand(letzte.km);
       setTachostand(letzte.km);
       setSorte(letzte.sorte);
     }
-  }, []);
+  };
+
+  ladeDaten();
+}, []);
 
   useEffect(() => {
     const dist = tachostand - letzterStand;
@@ -101,66 +111,98 @@ export default function Kosten() {
     else if (preisProLiter && gesamtbetrag) setMenge((gesamtbetrag / preisProLiter).toFixed(2));
   }, [menge, preisProLiter, gesamtbetrag]);
 
-  const speichernBetankung = () => {
-    const neuerEintrag = {
-      datum: new Date().toISOString().split("T")[0],
-      km: tachostand,
-      distanz,
-      menge,
-      preis_l: preisProLiter,
-      gesamt: gesamtbetrag,
-      sorte,
-      voll,
-      verbrauch,
-      streckenprofil,
-      optionen,
-      waehrung,
-      reifen,
-      synced: false,
-    };
-    const stored = JSON.parse(localStorage.getItem("zerotrace"));
-    stored.vehicles[vin].betankungen.unshift(neuerEintrag);
-    localStorage.setItem("zerotrace", JSON.stringify(stored));
-    setEntries([neuerEintrag, ...entries]);
-    setShowForm(false);
+import localforage from "localforage";
+
+const speichernBetankung = async () => {
+  const neuerEintrag = {
+    datum: new Date().toISOString().split("T")[0],
+    km: tachostand,
+    distanz,
+    menge,
+    preis_l: preisProLiter,
+    gesamt: gesamtbetrag,
+    sorte,
+    voll,
+    verbrauch,
+    streckenprofil,
+    optionen,
+    waehrung,
+    reifen,
+    synced: false,
   };
 
-  const speichernAusgabe = () => {
+  const stored = await localforage.getItem("zerotrace") || {
+    vehicles: {},
+    activeVin: vin,
+  };
+
+  if (!stored.vehicles[vin]) {
+    stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+  }
+
+  stored.vehicles[vin].betankungen.unshift(neuerEintrag);
+  await localforage.setItem("zerotrace", stored);
+
+  setEntries([neuerEintrag, ...entries]);
+  setShowForm(false);
+};
+
+import localforage from "localforage";
+
+const speichernAusgabe = async () => {
   const neuerEintrag = {
     datum: new Date().toISOString().split("T")[0],
     tachostand,
     kostenart,
     betrag: kosten,
-    waehrung: ausgabenWaehrung,  // <-- neu
+    waehrung: ausgabenWaehrung,
     bemerkung,
     synced: false,
   };
 
-  const stored = JSON.parse(localStorage.getItem("zerotrace"));
+  const stored = await localforage.getItem("zerotrace") || {
+    vehicles: {},
+    activeVin: vin,
+  };
+
   if (!stored.vehicles[vin]) {
     stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
   }
+
   stored.vehicles[vin].ausgaben.unshift(neuerEintrag);
-  localStorage.setItem("zerotrace", JSON.stringify(stored));
+  await localforage.setItem("zerotrace", stored);
+
   setAusgaben([neuerEintrag, ...ausgaben]);
   setShowForm(false);
 };
 
-  const speichernErinnerung = () => {
-    const neuerEintrag = {
-      titel,
-      beschreibung,
-      faellig,
-      wiederholung,
-      tachostand: fälligKm,
-      synced: false,
-    };
-    const stored = JSON.parse(localStorage.getItem("zerotrace"));
-    stored.vehicles[vin].erinnerungen.unshift(neuerEintrag);
-    localStorage.setItem("zerotrace", JSON.stringify(stored));
-    setErinnerungen([neuerEintrag, ...erinnerungen]);
-    setShowForm(false);
+import localforage from "localforage";
+
+const speichernErinnerung = async () => {
+  const neuerEintrag = {
+    titel,
+    beschreibung,
+    faellig,
+    wiederholung,
+    tachostand: fälligKm,
+    synced: false,
   };
+
+  const stored = await localforage.getItem("zerotrace") || {
+    vehicles: {},
+    activeVin: vin,
+  };
+
+  if (!stored.vehicles[vin]) {
+    stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+  }
+
+  stored.vehicles[vin].erinnerungen.unshift(neuerEintrag);
+  await localforage.setItem("zerotrace", stored);
+
+  setErinnerungen([neuerEintrag, ...erinnerungen]);
+  setShowForm(false);
+};
 
   const isOverdue = (date) => {
     const today = new Date().toISOString().split("T")[0];
