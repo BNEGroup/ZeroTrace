@@ -1,4 +1,4 @@
-// KOSTEN.JSX – finaler Kombi-Code mit Betankungen, Ausgaben und Erinnerungen (vollständig)
+// KOSTEN.JSX – finaler vollständiger Code mit sauberen Labels, Logik & allen Tabs
 import { useEffect, useState } from "react";
 import {
   Tabs, TabsList, TabsTrigger, TabsContent
@@ -160,13 +160,20 @@ export default function Kosten() {
             <Card className="mb-6">
               <CardContent className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input type="number" placeholder="Tachostand" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
-                  <Input type="number" placeholder="Distanz" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} />
-                  <Input type="number" placeholder="Liter" value={menge} onChange={(e) => setMenge(Number(e.target.value))} />
-                  <Input type="number" placeholder="Preis/Liter" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} />
-                  <Input type="number" placeholder="Gesamtbetrag" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} />
-                  <Select onValueChange={setSorte} defaultValue={sorte}><SelectTrigger>{sorte}</SelectTrigger><SelectContent>{kraftstoffArten.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent></Select>
-                  <div className="flex items-center gap-2"><Label>Voll</Label><Switch checked={voll} onCheckedChange={setVoll} /></div>
+                  <div><Label>Tachostand</Label><Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} /></div>
+                  <div><Label>Distanz</Label><Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} /></div>
+                  <div><Label>Menge (l)</Label><Input type="number" value={menge} onChange={(e) => setMenge(Number(e.target.value))} /></div>
+                  <div><Label>Preis pro Liter</Label><Input type="number" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} /></div>
+                  <div><Label>Gesamtbetrag</Label><Input type="number" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} /></div>
+                  <div><Label>Kraftstoff</Label>
+                    <Select onValueChange={setSorte} defaultValue={sorte}>
+                      <SelectTrigger>{sorte}</SelectTrigger>
+                      <SelectContent>
+                        {kraftstoffArten.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2"><Label>Vollbetankung</Label><Switch checked={voll} onCheckedChange={setVoll} /></div>
                   <div><Label>Verbrauch</Label><Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} /></div>
                 </div>
                 <div className="text-right"><Button onClick={speichernBetankung}>Sichern</Button></div>
@@ -187,11 +194,18 @@ export default function Kosten() {
           {showForm && activeTab === "ausgaben" && (
             <Card className="mb-6"><CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input placeholder="Tachostand" type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
-                <Select onValueChange={setKostenart} defaultValue={kostenart}><SelectTrigger>{kostenart || "Kostenart wählen"}</SelectTrigger><SelectContent>{kostenarten.map(k => (<SelectItem key={k} value={k}>{k}</SelectItem>))}</SelectContent></Select>
-                <Input placeholder="Betrag (EUR)" type="number" value={kosten} onChange={(e) => setKosten(e.target.value)} />
+                <div><Label>Tachostand</Label><Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} /></div>
+                <div><Label>Kostenart</Label>
+                  <Select onValueChange={setKostenart} defaultValue={kostenart}>
+                    <SelectTrigger>{kostenart || "Kostenart wählen"}</SelectTrigger>
+                    <SelectContent>
+                      {kostenarten.map((k) => (<SelectItem key={k} value={k}>{k}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Betrag (EUR)</Label><Input type="number" value={kosten} onChange={(e) => setKosten(e.target.value)} /></div>
               </div>
-              <Textarea placeholder="Bemerkung" value={bemerkung} onChange={(e) => setBemerkung(e.target.value)} />
+              <div><Label>Bemerkung</Label><Textarea value={bemerkung} onChange={(e) => setBemerkung(e.target.value)} /></div>
               <div className="text-right"><Button onClick={speichernAusgabe}>Sichern</Button></div>
             </CardContent></Card>
           )}
@@ -209,12 +223,19 @@ export default function Kosten() {
           {showForm && activeTab === "erinnerungen" && (
             <Card className="mb-6"><CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input placeholder="Titel" value={titel} onChange={(e) => setTitel(e.target.value)} />
-                <Input type="date" value={faellig} onChange={(e) => setFaellig(e.target.value)} />
-                <Input placeholder="Tachostand (optional)" type="number" value={fälligKm} onChange={(e) => setFälligKm(e.target.value)} />
-                <Select onValueChange={setWiederholung} defaultValue={wiederholung}><SelectTrigger>{wiederholung}</SelectTrigger><SelectContent>{wiederholungen.map(w => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select>
+                <div><Label>Titel</Label><Input value={titel} onChange={(e) => setTitel(e.target.value)} /></div>
+                <div><Label>Fällig am</Label><Input type="date" value={faellig} onChange={(e) => setFaellig(e.target.value)} /></div>
+                <div><Label>Tachostand (optional)</Label><Input type="number" value={fälligKm} onChange={(e) => setFälligKm(e.target.value)} /></div>
+                <div><Label>Wiederholung</Label>
+                  <Select onValueChange={setWiederholung} defaultValue={wiederholung}>
+                    <SelectTrigger>{wiederholung}</SelectTrigger>
+                    <SelectContent>
+                      {wiederholungen.map((w) => (<SelectItem key={w} value={w}>{w}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <Textarea placeholder="Beschreibung" value={beschreibung} onChange={(e) => setBeschreibung(e.target.value)} />
+              <div><Label>Beschreibung</Label><Textarea value={beschreibung} onChange={(e) => setBeschreibung(e.target.value)} /></div>
               <div className="text-right"><Button onClick={speichernErinnerung}>Sichern</Button></div>
             </CardContent></Card>
           )}
