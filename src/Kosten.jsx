@@ -35,8 +35,6 @@ export default function Kosten() {
   const [letzterStand, setLetzterStand] = useState(0);
 
   const [waehrung, setWaehrung] = useState("EUR");
-  const [fahrweise, setFahrweise] = useState("");
-  const [strecke, setStrecke] = useState("");
   const [reifen, setReifen] = useState("");
   const [tankstelle, setTankstelle] = useState("");
 
@@ -116,6 +114,8 @@ export default function Kosten() {
       verbrauch,
       streckenprofil,
       optionen,
+      waehrung,
+      reifen,
       synced: false,
     };
     const stored = JSON.parse(localStorage.getItem("zerotrace"));
@@ -230,6 +230,16 @@ export default function Kosten() {
           </div>
         </div>
 
+        // Reifentyp-Auswahlfeld ergänzen (nach Zusatzoptionen)
+        <div className="col-span-2">
+            <Label>Reifentyp</Label>
+            <Select onValueChange={setReifen} defaultValue={reifen}>
+            <SelectTrigger>{reifen || "Reifentyp wählen"}</SelectTrigger>
+        <SelectContent>{reifenarten.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}
+            </SelectContent>
+        </Select>
+        </div>
+
         <div className="text-right"><Button onClick={speichernBetankung}>Sichern</Button></div>
       </CardContent>
     </Card>
@@ -250,6 +260,7 @@ export default function Kosten() {
       )}
       {e.tankstelle && <p className="text-sm text-muted-foreground">Tankstelle: {e.tankstelle}</p>}
       {e.synced === false && <p className="text-xs text-yellow-500">nicht synchronisiert</p>}
+      {e.reifen && <p className="text-sm text-muted-foreground">Reifen: {e.reifen}</p>}
     </CardContent></Card>
   ))}
 </TabsContent>
