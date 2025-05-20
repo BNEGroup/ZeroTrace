@@ -66,7 +66,6 @@ export default function Kosten() {
   const vin = "WBA8H71020K659220";
 
 
-  import localforage from "localforage";
 
 useEffect(() => {
   const ladeDaten = async () => {
@@ -111,7 +110,6 @@ useEffect(() => {
     else if (preisProLiter && gesamtbetrag) setMenge((gesamtbetrag / preisProLiter).toFixed(2));
   }, [menge, preisProLiter, gesamtbetrag]);
 
-import localforage from "localforage";
 
 const speichernBetankung = async () => {
   const neuerEintrag = {
@@ -147,8 +145,6 @@ const speichernBetankung = async () => {
   setShowForm(false);
 };
 
-import localforage from "localforage";
-
 const speichernAusgabe = async () => {
   const neuerEintrag = {
     datum: new Date().toISOString().split("T")[0],
@@ -175,8 +171,6 @@ const speichernAusgabe = async () => {
   setAusgaben([neuerEintrag, ...ausgaben]);
   setShowForm(false);
 };
-
-import localforage from "localforage";
 
 const speichernErinnerung = async () => {
   const neuerEintrag = {
