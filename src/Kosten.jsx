@@ -83,7 +83,7 @@ useEffect(() => {
     setAusgaben([...fahrzeug.ausgaben].reverse());
     setErinnerungen([...fahrzeug.erinnerungen].reverse());
 
-    const letzte = fahrzeug.betankungen.at(-1);
+    const letzte = fahrzeug.betankungen[fahrzeug.betankungen.length - 1];
     if (letzte) {
       setLetzterStand(letzte.km);
       setTachostand(letzte.km);
