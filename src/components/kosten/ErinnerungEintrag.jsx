@@ -1,4 +1,3 @@
-// src/components/kosten/ErinnerungEintrag.jsx
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell } from "lucide-react";
 
@@ -10,12 +9,9 @@ export default function ErinnerungEintrag({ eintrag, isOverdue }) {
           <Bell size={16} /> {eintrag.titel || "Erinnerung"}
         </p>
         <p className="text-sm text-muted-foreground">
-          Fällig: {eintrag.faellig || "–"}{" "}
-          {eintrag.tachostand && `• bei ${eintrag.tachostand} km`}
+          Fällig: {eintrag.faellig || "–"} {eintrag.tachostand && `• bei ${eintrag.tachostand} km`}
         </p>
-        {eintrag.beschreibung && (
-          <p className="text-sm mt-1">{eintrag.beschreibung}</p>
-        )}
+        {eintrag.beschreibung && <p className="text-sm mt-1">{eintrag.beschreibung}</p>}
         {eintrag.synced === false && (
           <p className="text-xs text-yellow-500 mt-2">nicht synchronisiert</p>
         )}
