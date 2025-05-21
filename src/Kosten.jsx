@@ -97,6 +97,7 @@ export default function Kosten() {
               gesamtbetrag={gesamtbetrag}
               setGesamtbetrag={setGesamtbetrag}
               verbrauch={verbrauch}
+              setVerbrauch={setVerbrauch}
               streckenprofil={streckenprofil}
               setStreckenprofil={setStreckenprofil}
               optionen={optionen}

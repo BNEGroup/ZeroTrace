@@ -27,6 +27,7 @@ export default function BetankungForm({
   voll,
   setVoll,
   verbrauch,
+  setVerbrauch,
   streckenprofil,
   setStreckenprofil,
   optionen,
