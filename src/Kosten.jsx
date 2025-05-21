@@ -107,7 +107,7 @@ export default function Kosten() {
             />
           )}
           {entries.map((e, i) => (
-            <BetankungEintrag key={i} eintrag={e} />
+            <BetankungEintrag key={i} eintrag={e} index={i} entries={entries} setEntries={setEntries}/>
           ))}
         </TabsContent>
 
