@@ -28,7 +28,11 @@ export default function useZerotraceData() {
   const [optionen, setOptionen] = useState({ standheizung: false, anhaenger: false, klima: false });
 
   const waehrungen = ["EUR", "HUF", "USD"];
-  const kraftstoffArten = ["BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel", "Pflanzenöl", "Super 95", "Super E10", "Super 98", "Super Plus 103", "LPG", "LNG", "Wasserstoff"];
+  const kraftstoffArten = [
+    "BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel",
+    "Pflanzenöl", "Super 95", "Super E10", "Super 98", "Super Plus 103",
+    "LPG", "LNG", "Wasserstoff"
+  ];
   const reifenarten = ["Sommerreifen", "Winterreifen", "Ganzjahresreifen"];
 
   const vin = initialData.activeVin;
@@ -40,12 +44,12 @@ export default function useZerotraceData() {
         stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
       }
       const fahrzeug = stored.vehicles[vin];
-      const sortiert = [...fahrzeug.betankungen].sort((a, b) => b.datum.localeCompare(a.datum));
-      setEntries(sortiert);
+      const sortierte = [...fahrzeug.betankungen].sort((a, b) => b.datum.localeCompare(a.datum));
+      setEntries(sortierte);
       setAusgaben([...fahrzeug.ausgaben].sort((a, b) => b.datum.localeCompare(a.datum)));
       setErinnerungen([...fahrzeug.erinnerungen].sort((a, b) => b.datum.localeCompare(a.datum)));
 
-      const letzte = sortiert.at(0);
+      const letzte = sortierte.at(0);
       if (letzte) {
         setLetzterStand(letzte.km);
         setTachostand(letzte.km);
@@ -56,6 +60,26 @@ export default function useZerotraceData() {
     ladeDaten();
   }, []);
 
+  useEffect(() => {
+    const dist = tachostand - letzterStand;
+    setDistanz(dist);
+    if (dist > 0 && menge > 0) {
+      setVerbrauch(((menge / dist) * 100).toFixed(2));
+    }
+  }, [tachostand]);
+
+  useEffect(() => {
+    if (distanz > 0 && menge > 0) {
+      setVerbrauch(((menge / distanz) * 100).toFixed(2));
+    }
+  }, [distanz, menge]);
+
+  useEffect(() => {
+    if (menge && preisProLiter) setGesamtbetrag((menge * preisProLiter).toFixed(2));
+    else if (menge && gesamtbetrag) setPreisProLiter((gesamtbetrag / menge).toFixed(3));
+    else if (preisProLiter && gesamtbetrag) setMenge((gesamtbetrag / preisProLiter).toFixed(2));
+  }, [menge, preisProLiter, gesamtbetrag]);
+
   const speichernBetankung = async (eintrag) => {
     const stored = (await localforage.getItem("zerotrace")) || initialData;
     if (!stored.vehicles[vin]) {
@@ -63,8 +87,8 @@ export default function useZerotraceData() {
     }
     stored.vehicles[vin].betankungen.unshift(eintrag);
     await localforage.setItem("zerotrace", stored);
-    const neueListe = [eintrag, ...entries].sort((a, b) => b.datum.localeCompare(a.datum));
-    setEntries(neueListe);
+    const updated = [eintrag, ...entries].sort((a, b) => b.datum.localeCompare(a.datum));
+    setEntries(updated);
     setLetzterStand(eintrag.km);
     setTachostand(eintrag.km);
     setSorte(eintrag.sorte);
