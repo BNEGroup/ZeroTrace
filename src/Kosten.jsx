@@ -43,6 +43,7 @@ export default function Kosten() {
     voll,
     setVoll,
     verbrauch,
+    setVerbrauch,
     waehrung,
     setWaehrung,
     reifen,
