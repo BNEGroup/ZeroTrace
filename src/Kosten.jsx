@@ -1,25 +1,19 @@
-// src/Kosten.jsx
-import { useState } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+// src/lib/useZerotraceData.js
+import { useEffect, useState } from "react";
+import localforage from "localforage";
 
-import BetankungForm from "@/components/kosten/BetankungForm";
-import BetankungEintrag from "@/components/kosten/BetankungEintrag";
-import AusgabeForm from "@/components/kosten/AusgabeForm";
-import AusgabeEintrag from "@/components/kosten/AusgabeEintrag";
-import ErinnerungForm from "@/components/kosten/ErinnerungForm";
-import ErinnerungEintrag from "@/components/kosten/ErinnerungEintrag";
-import useZerotraceData from "@/lib/useZerotraceData";
+const initialData = {
+  vehicles: {},
+  activeVin: "WBA8H71020K659220"
+};
 
-const kraftstoffArten = ["BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel", "Pflanzenöl", "Super 95", "Super E10", "Super 98", "Super Plus 103", "LPG", "LNG", "Wasserstoff"];
-const reifenarten = ["Sommerreifen", "Winterreifen", "Ganzjahresreifen"];
-const waehrungen = ["EUR", "HUF", "USD"];
+export default function useZerotraceData() {
+  const [entries, setEntries] = useState([]);
+  const [ausgaben, setAusgaben] = useState([]);
+  const [erinnerungen, setErinnerungen] = useState([]);
+  const [letzterStand, setLetzterStand] = useState(0);
 
-export default function Kosten() {
-  const [activeTab, setActiveTab] = useState("betankungen");
-  const [showForm, setShowForm] = useState(false);
-
+  const [tachostand, setTachostand] = useState(0);
   const [distanz, setDistanz] = useState(0);
   const [menge, setMenge] = useState(0);
   const [preisProLiter, setPreisProLiter] = useState(0);
@@ -27,113 +21,135 @@ export default function Kosten() {
   const [sorte, setSorte] = useState("HVO100");
   const [voll, setVoll] = useState(true);
   const [verbrauch, setVerbrauch] = useState(null);
-  const [streckenprofil, setStreckenprofil] = useState([]);
-  const [optionen, setOptionen] = useState({ standheizung: false, anhaenger: false, klima: false });
+  const [waehrung, setWaehrung] = useState("EUR");
   const [reifen, setReifen] = useState("");
   const [tankstelle, setTankstelle] = useState("");
-  const [waehrung, setWaehrung] = useState("EUR");
+  const [streckenprofil, setStreckenprofil] = useState([]);
+  const [optionen, setOptionen] = useState({ standheizung: false, anhaenger: false, klima: false });
 
-  const {
+  const waehrungen = ["EUR", "HUF", "USD"];
+  const kraftstoffArten = [
+    "BioDiesel", "Diesel", "GTL Diesel", "HVO100", "Premium Diesel",
+    "Pflanzenöl", "Super 95", "Super E10", "Super 98", "Super Plus 103",
+    "LPG", "LNG", "Wasserstoff"
+  ];
+  const reifenarten = ["Sommerreifen", "Winterreifen", "Ganzjahresreifen"];
+
+  const vin = initialData.activeVin;
+
+  useEffect(() => {
+    const ladeDaten = async () => {
+      const stored = (await localforage.getItem("zerotrace")) || initialData;
+      if (!stored.vehicles[vin]) {
+        stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+      }
+      const fahrzeug = stored.vehicles[vin];
+      const sortierte = [...fahrzeug.betankungen].sort((a, b) => b.datum.localeCompare(a.datum));
+      setEntries(sortierte);
+      setAusgaben([...fahrzeug.ausgaben].reverse());
+      setErinnerungen([...fahrzeug.erinnerungen].reverse());
+
+      const letzte = fahrzeug.betankungen.at(-1);
+      if (letzte) {
+        setLetzterStand(letzte.km);
+        setTachostand(letzte.km);
+        setSorte(letzte.sorte);
+      }
+    };
+
+    ladeDaten();
+  }, []);
+
+  useEffect(() => {
+    const dist = tachostand - letzterStand;
+    setDistanz(dist);
+    if (dist > 0 && menge > 0) {
+      setVerbrauch(((menge / dist) * 100).toFixed(2));
+    }
+  }, [tachostand]);
+
+  useEffect(() => {
+    if (distanz > 0 && menge > 0) {
+      setVerbrauch(((menge / distanz) * 100).toFixed(2));
+    }
+  }, [distanz, menge]);
+
+  useEffect(() => {
+    if (menge && preisProLiter) setGesamtbetrag((menge * preisProLiter).toFixed(2));
+    else if (menge && gesamtbetrag) setPreisProLiter((gesamtbetrag / menge).toFixed(3));
+    else if (preisProLiter && gesamtbetrag) setMenge((gesamtbetrag / preisProLiter).toFixed(2));
+  }, [menge, preisProLiter, gesamtbetrag]);
+
+  const speichernBetankung = async (eintrag) => {
+    const stored = (await localforage.getItem("zerotrace")) || initialData;
+    if (!stored.vehicles[vin]) {
+      stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+    }
+    stored.vehicles[vin].betankungen.unshift(eintrag);
+    await localforage.setItem("zerotrace", stored);
+    const updated = [eintrag, ...entries].sort((a, b) => b.datum.localeCompare(a.datum));
+    setEntries(updated);
+  };
+
+  const speichernAusgabe = async (eintrag) => {
+    const stored = (await localforage.getItem("zerotrace")) || initialData;
+    if (!stored.vehicles[vin]) {
+      stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+    }
+    stored.vehicles[vin].ausgaben.unshift(eintrag);
+    await localforage.setItem("zerotrace", stored);
+    setAusgaben([eintrag, ...ausgaben]);
+  };
+
+  const speichernErinnerung = async (eintrag) => {
+    const stored = (await localforage.getItem("zerotrace")) || initialData;
+    if (!stored.vehicles[vin]) {
+      stored.vehicles[vin] = { betankungen: [], ausgaben: [], erinnerungen: [] };
+    }
+    stored.vehicles[vin].erinnerungen.unshift(eintrag);
+    await localforage.setItem("zerotrace", stored);
+    setErinnerungen([eintrag, ...erinnerungen]);
+  };
+
+  return {
     entries,
     ausgaben,
     erinnerungen,
-    speichernBetankung,
-    speichernAusgabe,
-    speichernErinnerung,
+    letzterStand,
     tachostand,
     setTachostand,
-    letzterStand,
-    setLetzterStand,
+    distanz,
+    setDistanz,
+    menge,
+    setMenge,
+    preisProLiter,
+    setPreisProLiter,
+    gesamtbetrag,
+    setGesamtbetrag,
+    sorte,
+    setSorte,
+    voll,
+    setVoll,
+    verbrauch,
+    waehrung,
+    setWaehrung,
+    reifen,
+    setReifen,
+    tankstelle,
+    setTankstelle,
+    streckenprofil,
+    setStreckenprofil,
+    optionen,
+    setOptionen,
+    waehrungen,
+    kraftstoffArten,
+    reifenarten,
+    vin,
     setEntries,
     setAusgaben,
     setErinnerungen,
-  } = useZerotraceData();
-
-  const isOverdue = (date) => {
-    const today = new Date().toISOString().split("T")[0];
-    return date && date < today;
+    speichernBetankung,
+    speichernAusgabe,
+    speichernErinnerung
   };
-
-  return (
-    <div className="min-h-screen p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Kostenübersicht</h1>
-        <Button variant="outline" size="icon" onClick={() => setShowForm(!showForm)}>
-          <Plus size={18} />
-        </Button>
-      </div>
-
-      <Tabs defaultValue={activeTab} onValueChange={(v) => { setActiveTab(v); setShowForm(false); }}>
-        <TabsList className="grid grid-cols-3 gap-2 mb-4">
-          <TabsTrigger value="betankungen">Betankungen</TabsTrigger>
-          <TabsTrigger value="ausgaben">Ausgaben</TabsTrigger>
-          <TabsTrigger value="erinnerungen">Erinnerungen</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="betankungen">
-          {showForm && activeTab === "betankungen" && (
-            <BetankungForm
-              speichern={speichernBetankung}
-              tachostand={tachostand}
-              letzterStand={letzterStand}
-              setTachostand={setTachostand}
-              setLetzterStand={setLetzterStand}
-              setShowForm={setShowForm}
-              distanz={distanz}
-              setDistanz={setDistanz}
-              menge={menge}
-              setMenge={setMenge}
-              preisProLiter={preisProLiter}
-              setPreisProLiter={setPreisProLiter}
-              gesamtbetrag={gesamtbetrag}
-              setGesamtbetrag={setGesamtbetrag}
-              verbrauch={verbrauch}
-              streckenprofil={streckenprofil}
-              setStreckenprofil={setStreckenprofil}
-              optionen={optionen}
-              setOptionen={setOptionen}
-              reifen={reifen}
-              setReifen={setReifen}
-              tankstelle={tankstelle}
-              setTankstelle={setTankstelle}
-              waehrung={waehrung}
-              setWaehrung={setWaehrung}
-              kraftstoffArten={kraftstoffArten}
-              waehrungen={waehrungen}
-              reifenarten={reifenarten}
-              vin={"WBA8H71020K659220"}
-              entries={entries}
-              setEntries={setEntries}
-            />
-          )}
-          {entries.map((e, i) => (
-            <BetankungEintrag key={i} eintrag={e} index={i} entries={entries} setEntries={setEntries}/>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="ausgaben">
-          {showForm && activeTab === "ausgaben" && (
-            <AusgabeForm
-              speichern={speichernAusgabe}
-              tachostand={tachostand}
-              setTachostand={setTachostand}
-              setShowForm={setShowForm}
-            />
-          )}
-          {ausgaben.map((e, i) => (
-            <AusgabeEintrag key={i} eintrag={e} index={i} ausgaben={ausgaben} setAusgaben={setAusgaben}/>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="erinnerungen">
-          {showForm && activeTab === "erinnerungen" && (
-            <ErinnerungForm speichern={speichernErinnerung} setShowForm={setShowForm} />
-          )}
-          {erinnerungen.map((e, i) => (
-            <ErinnerungEintrag key={i} eintrag={e} isOverdue={isOverdue(e.faellig)} />
-          ))}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
 }
