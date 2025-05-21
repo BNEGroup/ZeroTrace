@@ -1,46 +1,31 @@
-import { useState, useEffect } from "react";
+// src/components/kosten/BetankungForm.jsx
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { kraftstoffArten, reifenarten, waehrungen } from "@/lib/utils";
 
 export default function BetankungForm({
-  tachostand, setTachostand,
-  letzterStand,
   speichern,
-  setShowForm
+  setShowForm,
+  tachostand, setTachostand,
+  distanz, setDistanz,
+  menge, setMenge,
+  preisProLiter, setPreisProLiter,
+  gesamtbetrag, setGesamtbetrag,
+  verbrauch,
+  streckenprofil, setStreckenprofil,
+  optionen, setOptionen,
+  reifen, setReifen,
+  tankstelle, setTankstelle,
+  waehrung, setWaehrung,
+  sorte, setSorte,
+  voll, setVoll,
+  kraftstoffArten, waehrungen, reifenarten
 }) {
-  const [distanz, setDistanz] = useState(0);
-  const [menge, setMenge] = useState(0);
-  const [preisProLiter, setPreisProLiter] = useState(0);
-  const [gesamtbetrag, setGesamtbetrag] = useState(0);
-  const [sorte, setSorte] = useState("HVO100");
-  const [voll, setVoll] = useState(true);
-  const [verbrauch, setVerbrauch] = useState(null);
-  const [waehrung, setWaehrung] = useState("EUR");
-  const [reifen, setReifen] = useState("");
-  const [tankstelle, setTankstelle] = useState("");
-  const [streckenprofil, setStreckenprofil] = useState([]);
-  const [optionen, setOptionen] = useState({ standheizung: false, anhaenger: false, klima: false });
-
-  useEffect(() => {
-    const dist = tachostand - letzterStand;
-    setDistanz(dist);
-    if (dist > 0 && menge > 0) setVerbrauch(((menge / dist) * 100).toFixed(2));
-  }, [tachostand]);
-
-  useEffect(() => {
-    if (distanz > 0 && menge > 0) setVerbrauch(((menge / distanz) * 100).toFixed(2));
-  }, [distanz, menge]);
-
-  useEffect(() => {
-    if (menge && preisProLiter) setGesamtbetrag((menge * preisProLiter).toFixed(2));
-    else if (menge && gesamtbetrag) setPreisProLiter((gesamtbetrag / menge).toFixed(3));
-    else if (preisProLiter && gesamtbetrag) setMenge((gesamtbetrag / preisProLiter).toFixed(2));
-  }, [menge, preisProLiter, gesamtbetrag]);
+  const [datum, setDatum] = useState(new Date().toISOString().split("T")[0]);
 
   const toggleProfil = (wert) => {
     setStreckenprofil((prev) =>
@@ -48,9 +33,9 @@ export default function BetankungForm({
     );
   };
 
-  const handleSave = () => {
+  const handleSpeichern = () => {
     speichern({
-      datum: new Date().toISOString().split("T")[0],
+      datum,
       km: tachostand,
       distanz,
       menge,
@@ -64,62 +49,67 @@ export default function BetankungForm({
       waehrung,
       reifen,
       tankstelle,
-      synced: false,
+      synced: false
     });
+    setShowForm(false);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
+        <div>
+          <Label>Datum</Label>
+          <Input type="date" value={datum} onChange={(e) => setDatum(e.target.value)} />
+        </div>
+        <div>
           <Label>Tachostand</Label>
           <Input type="number" value={tachostand} onChange={(e) => setTachostand(Number(e.target.value))} />
         </div>
-        <div className="flex flex-col gap-1">
+        <div>
           <Label>Distanz</Label>
           <Input type="number" value={distanz} onChange={(e) => setDistanz(Number(e.target.value))} />
         </div>
-        <div className="flex flex-col gap-1">
+        <div>
           <Label>Menge (l)</Label>
           <Input type="number" value={menge} onChange={(e) => setMenge(Number(e.target.value))} />
         </div>
-        <div className="flex flex-col gap-1">
+        <div>
           <Label>Preis pro Liter</Label>
           <Input type="number" value={preisProLiter} onChange={(e) => setPreisProLiter(Number(e.target.value))} />
         </div>
-        <div className="flex flex-col gap-1">
+        <div>
           <Label>Gesamtbetrag</Label>
           <Input type="number" value={gesamtbetrag} onChange={(e) => setGesamtbetrag(Number(e.target.value))} />
         </div>
-        <div className="flex flex-col gap-1">
+        <div>
           <Label>Währung</Label>
           <Select onValueChange={setWaehrung} defaultValue={waehrung}>
-            <SelectTrigger className="w-full">{waehrung}</SelectTrigger>
+            <SelectTrigger>{waehrung}</SelectTrigger>
             <SelectContent>
-              {waehrungen.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+              {waehrungen.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
-        <div className="flex flex-col gap-1">
+        <div>
           <Label>Kraftstoff</Label>
           <Select onValueChange={setSorte} defaultValue={sorte}>
-            <SelectTrigger className="w-full">{sorte}</SelectTrigger>
+            <SelectTrigger>{sorte}</SelectTrigger>
             <SelectContent>
-              {kraftstoffArten.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {kraftstoffArten.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2 mt-4">
+        <div className="flex items-center gap-2 mt-2">
           <Label>Vollbetankung</Label>
           <Switch checked={voll} onCheckedChange={setVoll} />
         </div>
-        <div className="flex flex-col gap-1">
+        <div>
           <Label>Verbrauch</Label>
           <Input disabled value={verbrauch ? `${verbrauch} l/100km` : "?"} />
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div>
         <Label>Tankstelle</Label>
         <Input type="text" value={tankstelle} onChange={(e) => setTankstelle(e.target.value)} />
       </div>
@@ -150,10 +140,10 @@ export default function BetankungForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div>
         <Label>Reifentyp</Label>
         <Select onValueChange={setReifen} defaultValue={reifen}>
-          <SelectTrigger className="w-full">{reifen || "Reifentyp wählen"}</SelectTrigger>
+          <SelectTrigger>{reifen || "Reifentyp wählen"}</SelectTrigger>
           <SelectContent>
             {reifenarten.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
           </SelectContent>
@@ -161,7 +151,7 @@ export default function BetankungForm({
       </div>
 
       <div className="text-right pt-2">
-        <Button onClick={handleSave}>Sichern</Button>
+        <Button onClick={handleSpeichern}>Sichern</Button>
       </div>
     </div>
   );
