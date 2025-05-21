@@ -20,3 +20,7 @@ export const waehrungen = ["EUR", "HUF", "USD"];
 export const fahrweisen = ["Stadt", "Landstraße", "Autobahn", "Gemischt"];
 export const streckenarten = ["Kurzstrecke", "Langstrecke", "Gemischt"];
 export const reifenarten = ["Sommerreifen", "Winterreifen", "Ganzjahresreifen"];
+
+export function cn(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
