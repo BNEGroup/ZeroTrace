@@ -121,7 +121,7 @@ export default function Kosten() {
             />
           )}
           {ausgaben.map((e, i) => (
-            <AusgabeEintrag key={i} eintrag={e} />
+            <AusgabeEintrag key={i} eintrag={e} index={i} ausgaben={ausgaben} setAusgaben={setAusgaben}/>
           ))}
         </TabsContent>
 
