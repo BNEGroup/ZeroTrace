@@ -56,7 +56,6 @@ export default function useZerotraceData() {
         setSorte(letzte.sorte);
       }
     };
-
     ladeDaten();
   }, []);
 
@@ -101,8 +100,7 @@ export default function useZerotraceData() {
     }
     stored.vehicles[vin].ausgaben.unshift(eintrag);
     await localforage.setItem("zerotrace", stored);
-    const neueListe = [eintrag, ...ausgaben].sort((a, b) => b.datum.localeCompare(a.datum));
-    setAusgaben(neueListe);
+    setAusgaben([eintrag, ...ausgaben].sort((a, b) => b.datum.localeCompare(a.datum)));
   };
 
   const speichernErinnerung = async (eintrag) => {
@@ -112,8 +110,7 @@ export default function useZerotraceData() {
     }
     stored.vehicles[vin].erinnerungen.unshift(eintrag);
     await localforage.setItem("zerotrace", stored);
-    const neueListe = [eintrag, ...erinnerungen].sort((a, b) => b.datum.localeCompare(a.datum));
-    setErinnerungen(neueListe);
+    setErinnerungen([eintrag, ...erinnerungen].sort((a, b) => b.datum.localeCompare(a.datum)));
   };
 
   return {
@@ -136,6 +133,7 @@ export default function useZerotraceData() {
     voll,
     setVoll,
     verbrauch,
+    setVerbrauch,
     waehrung,
     setWaehrung,
     reifen,
