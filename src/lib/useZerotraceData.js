@@ -124,6 +124,7 @@ export default function useZerotraceData() {
     setErinnerungen,
     speichernBetankung,
     speichernAusgabe,
-    speichernErinnerung
+    speichernErinnerung,
+    setAusgaben
   };
 }
