@@ -9,8 +9,10 @@ import {
   Wrench,
   Gauge,
 } from 'lucide-react';
+
 import Bordcomputer from './Bordcomputer';
 import Kosten from './Kosten';
+import Dashboard from './components/dashboard/Dashboard';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -20,7 +22,7 @@ function App() {
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'trip1', label: 'Bordcomputer', icon: Gauge },
     { id: 'statistik', label: 'Statistik', icon: BarChart2 },
-    { id: 'kosten', label: 'Kosten', icon: Droplet }, // ehemals 'verbrauch'
+    { id: 'kosten', label: 'Kosten', icon: Droplet },
     { id: 'service', label: 'Service', icon: Wrench },
     { id: 'einstellungen', label: 'Einstellungen', icon: Settings },
   ];
@@ -74,13 +76,15 @@ function App() {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">ZeroTrace KT v1</h1>
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            ZeroTrace KT v1
+          </h1>
         </header>
+
         <main className="space-y-6">
           {activeTab === 'dashboard' && (
             <section>
-              <h2 className="text-2xl font-semibold mb-2">Dashboard</h2>
-              <p>Hier kommt dein Dashboard Inhalt.</p>
+              <Dashboard />
             </section>
           )}
           {activeTab === 'trip1' && (
